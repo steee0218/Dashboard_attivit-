@@ -13,7 +13,6 @@
     
     <!-- Icona App generata dinamicamente per la Home di iOS/iPadOS -->
     <link rel="apple-touch-icon" id="apple-icon" href="">
-    <link rel="manifest" id="pwa-manifest" href="">
 
     <!-- Tailwind CSS & Chart.js & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -89,7 +88,6 @@
             cursor: pointer;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 9999px; }
@@ -109,15 +107,17 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">HabitFlow Pro</h1>
-                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">iOS & iPadOS</span>
+                            <span id="cloudStatusBadge" onclick="openBackupModal()" class="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                                ☁️ Locale
+                            </span>
                         </div>
                         <p id="currentDateLabel" class="text-xs sm:text-sm text-slate-400 font-medium"></p>
                     </div>
                 </div>
 
-                <!-- Tasto Guida Installazione Home su Mobile -->
-                <button onclick="openInstallModal()" class="sm:hidden p-2.5 rounded-xl glass-card text-cyan-400 hover:bg-slate-800/60 active:scale-95 transition" title="Installa su iPhone/iPad">
-                    <i data-lucide="smartphone" class="w-5 h-5"></i>
+                <!-- Tasto Rapido Cloud su Mobile -->
+                <button onclick="openBackupModal()" class="sm:hidden p-2.5 rounded-xl glass-card text-violet-400 hover:bg-slate-800/60 active:scale-95 transition" title="Sincronizza Cloud">
+                    <i data-lucide="cloud" class="w-5 h-5"></i>
                 </button>
             </div>
 
@@ -125,10 +125,10 @@
             <div class="hidden sm:flex items-center gap-2.5">
                 <button onclick="openInstallModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-cyan-300 hover:bg-slate-800/80 border border-cyan-500/30 flex items-center gap-2 transition">
                     <i data-lucide="smartphone" class="w-4 h-4"></i>
-                    Metti nella Home (iPhone/iPad)
+                    Metti nella Home
                 </button>
-                <button onclick="openBackupModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-slate-300 hover:bg-slate-800/80 flex items-center gap-2 transition">
-                    <i data-lucide="arrow-left-right" class="w-4 h-4 text-violet-400"></i>
+                <button onclick="openBackupModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-violet-300 hover:bg-slate-800/80 border border-violet-500/30 flex items-center gap-2 transition">
+                    <i data-lucide="cloud" class="w-4 h-4 text-violet-400"></i>
                     Sincronizza Dati
                 </button>
                 <button onclick="resetWeekConfirm()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-amber-300 hover:bg-slate-800/80 flex items-center gap-2 transition">
@@ -142,7 +142,7 @@
             </div>
         </header>
 
-        <!-- RIEPILOGO KPI (4 Card compatibili con iPhone 2x2 e iPad 4x1) -->
+        <!-- RIEPILOGO KPI -->
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
                 <div>
@@ -189,7 +189,7 @@
             </div>
         </section>
 
-        <!-- SELETTORE GIORNO DELLA SETTIMANA (Sempre visibile e comodissimo per il pollice) -->
+        <!-- SELETTORE GIORNO DELLA SETTIMANA -->
         <section class="glass-card rounded-2xl p-3 sm:p-4">
             <div class="flex items-center justify-between mb-3 px-1">
                 <div class="flex items-center gap-2">
@@ -201,18 +201,14 @@
                     Spunta tutto il giorno
                 </button>
             </div>
-            <div id="daySelectorBar" class="grid grid-cols-7 gap-1.5 sm:gap-2.5">
-                <!-- Generato da JS -->
-            </div>
+            <div id="daySelectorBar" class="grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
         </section>
 
-        <!-- CONTENUTO PRINCIPALE: Layout Adattivo (Tabs su iPhone, Affiancato/Espanso su iPad Pro) -->
-        
-        <!-- SEZIONE 1: AGENDA ORARIA DEL GIORNO SELEZIONATO + VISTA SETTIMANALE -->
+        <!-- SEZIONE 1: AGENDA ORARIA + VISTA SETTIMANALE -->
         <div id="viewAgenda" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                <!-- Colonna Sinistra (5 col su iPad Pro): Agenda del Giorno ordinata per Orario -->
+                <!-- Agenda del Giorno -->
                 <div class="lg:col-span-5 glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
@@ -226,12 +222,8 @@
                             <span id="agendaProgressBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">0/0</span>
                         </div>
 
-                        <!-- Lista attività del giorno selezionato -->
-                        <div id="dailyAgendaList" class="space-y-3">
-                            <!-- Popolato da JS -->
-                        </div>
+                        <div id="dailyAgendaList" class="space-y-3"></div>
 
-                        <!-- Eventuali attività NON pianificate per oggi ma che puoi spuntare come extra -->
                         <div id="unscheduledSection" class="mt-6 pt-4 border-t border-slate-800/80 hidden">
                             <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center gap-1.5">
                                 <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
@@ -247,7 +239,7 @@
                     </button>
                 </div>
 
-                <!-- Colonna Destra (7 col su iPad Pro): Tabella Settimanale Completa con Giorni e Orari -->
+                <!-- Tabella Settimanale Completa -->
                 <div id="matrixContainer" class="lg:col-span-7 glass-card rounded-2xl p-4 sm:p-5 overflow-hidden">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                         <div>
@@ -262,13 +254,9 @@
                     <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                         <table class="w-full min-w-[620px] text-left border-collapse">
                             <thead>
-                                <tr id="matrixHeaderRow" class="border-b border-slate-800/80 text-[11px] font-bold uppercase text-slate-400">
-                                    <!-- Generato da JS -->
-                                </tr>
+                                <tr id="matrixHeaderRow" class="border-b border-slate-800/80 text-[11px] font-bold uppercase text-slate-400"></tr>
                             </thead>
-                            <tbody id="matrixBody" class="divide-y divide-slate-800/60 text-sm">
-                                <!-- Generato da JS -->
-                            </tbody>
+                            <tbody id="matrixBody" class="divide-y divide-slate-800/60 text-sm"></tbody>
                         </table>
                     </div>
                 </div>
@@ -276,9 +264,8 @@
             </div>
         </div>
 
-        <!-- SEZIONE 2: GRAFICI DELLE SERIE E PROGRESSI SETTIMANALI -->
+        <!-- SEZIONE 2: GRAFICI -->
         <section id="viewCharts" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Grafico 1: Andamento Giornaliero % Completamento -->
             <div class="glass-card rounded-2xl p-4 sm:p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -298,7 +285,6 @@
                 </div>
             </div>
 
-            <!-- Grafico 2: Serie e Obiettivi Raggiunti vs Pianificati -->
             <div class="glass-card rounded-2xl p-4 sm:p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -317,7 +303,7 @@
 
     </div>
 
-    <!-- BARRA DI NAVIGAZIONE INFERIORE PER IPHONE (Stile App iOS) -->
+    <!-- BARRA DI NAVIGAZIONE INFERIORE PER IPHONE -->
     <nav class="sm:hidden fixed bottom-0 left-0 right-0 bottom-nav-glass z-40 px-4 pt-2 pb-3 flex items-center justify-around">
         <button onclick="mobileNav('agenda')" id="navBtnAgenda" class="flex flex-col items-center gap-1 text-violet-400 font-semibold text-[11px]">
             <i data-lucide="alarm-clock" class="w-5 h-5"></i>
@@ -335,12 +321,12 @@
             <span>Grafici</span>
         </button>
         <button onclick="openBackupModal()" id="navBtnSync" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]">
-            <i data-lucide="settings-2" class="w-5 h-5"></i>
-            <span>Opzioni</span>
+            <i data-lucide="cloud" class="w-5 h-5"></i>
+            <span>Cloud & Opzioni</span>
         </button>
     </nav>
 
-    <!-- MODALE: CREA / MODIFICA ATTIVITÀ CON GIORNI E ORARI SPECIFICI -->
+    <!-- MODALE: CREA / MODIFICA ATTIVITÀ -->
     <div id="habitModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
         <div class="glass-card rounded-3xl max-w-lg w-full p-5 sm:p-6 border border-slate-700/80 my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
@@ -356,10 +342,9 @@
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Nome Attività / Obiettivo</label>
                     <input type="text" id="habitName" required placeholder="Es. Allenamento Memoria PAO, Calcetto, Studio..." 
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-violet-500">
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-violet-500 select-text">
                 </div>
 
-                <!-- Scelta Emoji & Colore -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Icona</label>
@@ -388,12 +373,11 @@
                     </div>
                 </div>
 
-                <!-- Impostazione Rapida Orario per tutti i giorni selezionati -->
                 <div class="p-3 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                             <i data-lucide="clock" class="w-4 h-4"></i>
-                            Giorni e Orari in cui devi farla
+                            Giorni e Orari
                         </span>
                         <div class="flex items-center gap-1.5">
                             <input type="time" id="bulkTimeInput" value="18:00" class="px-2 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white">
@@ -409,10 +393,7 @@
                         <button type="button" onclick="selectPresetDays('weekend')" class="px-2 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white">Weekend</button>
                     </div>
 
-                    <!-- Lista dei 7 giorni con switch e orario individuale -->
-                    <div id="scheduleDaysFormList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                        <!-- Generato da JS -->
-                    </div>
+                    <div id="scheduleDaysFormList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
                 </div>
 
                 <div class="flex items-center justify-end gap-2.5 pt-2">
@@ -427,7 +408,7 @@
         </div>
     </div>
 
-    <!-- MODALE: GUIDA INSTALLAZIONE HOME SU IPHONE 13 E IPAD PRO -->
+    <!-- MODALE: GUIDA INSTALLAZIONE HOME -->
     <div id="installModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
         <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
@@ -435,7 +416,7 @@
                     <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
                         <i data-lucide="smartphone" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="text-base font-bold text-white">Metti nella Home (iPhone 13 & iPad Pro)</h3>
+                    <h3 class="text-base font-bold text-white">Metti nella Home (iPhone & iPad)</h3>
                 </div>
                 <button onclick="closeInstallModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -443,42 +424,31 @@
             </div>
 
             <div class="space-y-3.5 text-xs sm:text-sm text-slate-300">
-                <p class="text-slate-400">Questa versione include già i <strong>meta tag nativi Apple PWA</strong> e un'icona ad alta risoluzione generata in automatico:</p>
-                
                 <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
                     <div class="flex items-start gap-2.5">
                         <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
-                        <p>Carica questo file <code>.html</code> su <strong>GitHub Pages</strong> (rinominandolo <code>index.html</code>) o trascinalo su <strong>app.netlify.com/drop</strong>.</p>
+                        <p>Apri il link ufficiale della tua GitHub Page dentro <strong>Safari</strong>.</p>
                     </div>
                     <div class="flex items-start gap-2.5">
                         <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
-                        <p>Apri il link ottenuto dentro <strong>Safari</strong> sul tuo iPhone 13 o iPad Pro.</p>
-                    </div>
-                    <div class="flex items-start gap-2.5">
-                        <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
                         <p>Tocca il tasto <strong>Condividi</strong> (quadrato con freccia in alto) e seleziona <strong>"Aggiungi alla schermata Home"</strong>.</p>
                     </div>
-                </div>
-
-                <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5">
-                    <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
-                    <span>Si aprirà a tutto schermo senza le barre di Safari, con il rispetto della tacca (Notch) dell'iPhone 13!</span>
                 </div>
             </div>
 
             <button onclick="closeInstallModal()" class="mt-5 w-full py-2.5 rounded-xl bg-violet-600 text-white text-xs font-bold">
-                Perfetto, ho capito!
+                Ho capito!
             </button>
         </div>
     </div>
 
-    <!-- MODALE: OPZIONI & SINCRONIZZAZIONE TRA IPHONE E IPAD -->
-    <div id="backupModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700">
+    <!-- MODALE: SINCRONIZZAZIONE CLOUD GITHUB & OPZIONI -->
+    <div id="backupModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700 my-8">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i data-lucide="settings-2" class="w-5 h-5 text-violet-400"></i>
-                    Gestione Settimana & Sincronizzazione
+                    <i data-lucide="cloud" class="w-5 h-5 text-violet-400"></i>
+                    Sincronizzazione Cloud & Opzioni
                 </h3>
                 <button onclick="closeBackupModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -486,6 +456,35 @@
             </div>
 
             <div class="space-y-4">
+                <!-- BOX CONFIGURAZIONE GITHUB CLOUD -->
+                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-violet-500/30 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-bold uppercase text-violet-400">Sincronizzazione Automatica GitHub</p>
+                        <span id="modalCloudStatus" class="text-[11px] font-semibold text-slate-400">Non collegato</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Inserisci il tuo Personal Access Token (con permesso <code>repo</code>) su iPhone e su iPad. Rimarrà salvato solo nella memoria privata del dispositivo.</p>
+                    
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Repository GitHub rilevato</label>
+                            <input type="text" id="ghRepoInput" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 select-text">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Token GitHub (ghp_...)</label>
+                            <input type="password" id="ghTokenInput" placeholder="Incolla qui ghp_..." class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white select-text">
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button type="button" onclick="saveGitHubConfig()" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-xs font-bold shadow-lg shadow-violet-600/25 active:scale-95 transition">
+                                Salva e Sincronizza Ora
+                            </button>
+                            <button type="button" onclick="forcePullFromCloud()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold" title="Scarica dati dal Cloud">
+                                Scarica
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AZIONI SETTIMANALI -->
                 <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
                     <p class="text-xs font-bold uppercase text-amber-400">Azioni Settimanali</p>
                     <button onclick="resetWeekConfirm()" class="w-full py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-2 transition">
@@ -494,29 +493,17 @@
                     </button>
                 </div>
 
+                <!-- BACKUP MANUALE FILE -->
                 <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-                    
-                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-                    <p class="text-xs font-bold uppercase text-violet-400">Sincronizzazione Cloud Automatica (GitHub)</p>
-                    <p class="text-xs text-slate-400">Incolla qui il tuo Personal Access Token di GitHub per attivare la sync automatica tra iPhone e iPad:</p>
-                    <div class="flex gap-2">
-                        <input type="password" id="ghTokenInput" placeholder="ghp_..." class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white">
-                        <button onclick="saveGitHubToken(document.getElementById('ghTokenInput').value)" class="px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold shrink-0">
-                            Salva
-                        </button>
-                    </div>
-                </div>
-
-<p class="text-xs font-bold uppercase text-cyan-400">Passa dati tra iPhone 13 e iPad Pro</p>
-                    <p class="text-xs text-slate-400">Puoi esportare il file JSON o copiare il codice per avere gli stessi orari e spunte su entrambi i dispositivi.</p>
+                    <p class="text-xs font-bold uppercase text-cyan-400">Backup Manuale su File</p>
                     <div class="grid grid-cols-2 gap-2 pt-1">
                         <button onclick="exportDataJson()" class="py-2.5 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1.5">
                             <i data-lucide="download" class="w-4 h-4"></i>
-                            Esporta Backup
+                            Esporta JSON
                         </button>
                         <label class="py-2.5 px-3 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-500/30 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
                             <i data-lucide="upload" class="w-4 h-4"></i>
-                            Importa Backup
+                            Importa JSON
                             <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden">
                         </label>
                     </div>
@@ -530,12 +517,13 @@
     </div>
 
     <script>
-        // --- COSTANTI GIORNI ---
+        // --- COSTANTI E STATO ---
         const DAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         const DAYS_FULL = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
         const STORAGE_KEY = 'habitflow_pro_v2_state';
+        const GH_USER = 'steee0218';
+        const GH_FILE = 'habits.json';
 
-        // Calcola indice del giorno corrente (0 = Lunedì ... 6 = Domenica)
         const jsDay = new Date().getDay();
         const todayIdx = jsDay === 0 ? 6 : jsDay - 1;
         let selectedDayIdx = todayIdx;
@@ -543,7 +531,6 @@
         let trendChartInstance = null;
         let comparisonChartInstance = null;
 
-        // --- DATI PREDEFINITI CON GIORNI E ORARI SPECIFICI ---
         const DEFAULT_HABITS = [
             {
                 id: 'h1',
@@ -624,61 +611,217 @@
 
         let habits = [];
 
-        // --- GENERAZIONE ICONA APPLE TOUCH E MANIFEST PWA ---
-        function setupApplePWA() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 180;
-            canvas.height = 180;
-            const ctx = canvas.getContext('2d');
-
-            // Sfondo gradiente scuro/viola
-            const grad = ctx.createLinearGradient(0, 0, 180, 180);
-            grad.addColorStop(0, '#4f46e5');
-            grad.addColorStop(0.5, '#7c3aed');
-            grad.addColorStop(1, '#06b6d4');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 180, 180);
-
-            // Simbolo spunta bianca centrale
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 16;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            ctx.moveTo(48, 95);
-            ctx.lineTo(78, 125);
-            ctx.lineTo(134, 62);
-            ctx.stroke();
-
-            const iconDataUrl = canvas.toDataURL('image/png');
-            document.getElementById('apple-icon').href = iconDataUrl;
-
-            const manifest = {
-                name: "HabitFlow Pro",
-                short_name: "HabitFlow",
-                start_url: ".",
-                display: "standalone",
-                background_color: "#0b0f19",
-                theme_color: "#0b0f19",
-                icons: [{ src: iconDataUrl, sizes: "180x180", type: "image/png" }]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-            document.getElementById('pwa-manifest').href = URL.createObjectURL(manifestBlob);
+        // --- RILEVAMENTO INTELLIGENTE REPOSITORY E TOKEN GITHUB ---
+        function detectRepoName() {
+            const savedRepo = localStorage.getItem('habitflow_gh_repo');
+            if (savedRepo) return savedRepo;
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts.length > 0 && !pathParts[0].endsWith('.html')) {
+                return pathParts[0];
+            }
+            return 'Dashboard_attivita';
         }
 
-        // --- CARICAMENTO & SALVATAGGIO LOCALSTORAGE ---
+        function getGitHubToken() {
+            return localStorage.getItem('habitflow_gh_token') || '';
+        }
+
+        function updateCloudBadge(state, message) {
+            const badge = document.getElementById('cloudStatusBadge');
+            const modalStatus = document.getElementById('modalCloudStatus');
+            if (!badge) return;
+
+            if (state === 'ok') {
+                badge.textContent = '☁️ Cloud Attivo';
+                badge.className = 'cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                if (modalStatus) { modalStatus.textContent = message || 'Sincronizzato ✅'; modalStatus.className = 'text-[11px] font-semibold text-emerald-400'; }
+            } else if (state === 'syncing') {
+                badge.textContent = '⏳ Sync...';
+                badge.className = 'cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+                if (modalStatus) { modalStatus.textContent = message || 'Sincronizzazione in corso...'; modalStatus.className = 'text-[11px] font-semibold text-cyan-400'; }
+            } else if (state === 'error') {
+                badge.textContent = '⚠️ Errore Cloud';
+                badge.className = 'cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30';
+                if (modalStatus) { modalStatus.textContent = message || 'Errore Token o Repo'; modalStatus.className = 'text-[11px] font-semibold text-rose-400'; }
+            } else {
+                badge.textContent = '☁️ Configura Cloud';
+                badge.className = 'cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                if (modalStatus) { modalStatus.textContent = 'Token non inserito'; modalStatus.className = 'text-[11px] font-semibold text-amber-400'; }
+            }
+        }
+
+        async function saveGitHubConfig() {
+            const tokenInput = document.getElementById('ghTokenInput').value.trim();
+            const repoInput = document.getElementById('ghRepoInput').value.trim() || 'Dashboard_attivita';
+
+            if (!tokenInput) {
+                alert('Incolla il tuo nuovo Token di GitHub (inizia con ghp_...) prima di premere Salva.');
+                return;
+            }
+
+            localStorage.setItem('habitflow_gh_token', tokenInput);
+            localStorage.setItem('habitflow_gh_repo', repoInput);
+
+            updateCloudBadge('syncing', 'Verifica connessione...');
+            
+            const pulled = await syncFromGitHub(true);
+            if (!pulled) {
+                await syncToGitHub();
+            }
+        }
+
+        async function forcePullFromCloud() {
+            const ok = await syncFromGitHub(true);
+            if (ok) alert('Dati scaricati da GitHub con successo!');
+        }
+
+        async function syncFromGitHub(isManual = false) {
+            const token = getGitHubToken();
+            const repo = detectRepoName();
+            if (!token) {
+                updateCloudBadge('none');
+                return false;
+            }
+
+            updateCloudBadge('syncing');
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GH_USER}/${repo}/contents/${GH_FILE}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Accept': 'application/vnd.github.v3+json' 
+                    },
+                    cache: 'no-store'
+                });
+
+                if (res.status === 404) {
+                    await syncToGitHub();
+                    return true;
+                }
+
+                if (!res.ok) {
+                    updateCloudBadge('error', `Errore GitHub (${res.status}): controlla Token/Repo`);
+                    if (isManual) alert(`Errore di connessione a GitHub (${res.status}). Verifica che il Token sia valido e non revocato e che il nome del repository (${repo}) sia esatto.`);
+                    return false;
+                }
+
+                const data = await res.json();
+                const cleanBase64 = data.content.replace(/\s/g, '');
+                const binaryStr = atob(cleanBase64);
+                const bytes = Uint8Array.from(binaryStr, c => c.charCodeAt(0));
+                const jsonStr = new TextDecoder().decode(bytes);
+                const contentDecoded = JSON.parse(jsonStr);
+
+                if (Array.isArray(contentDecoded)) {
+                    habits = contentDecoded;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+                    renderAll();
+                    updateCloudBadge('ok', 'Sincronizzato con GitHub ✅');
+                    return true;
+                }
+            } catch (e) {
+                console.error('Errore sync da GitHub:', e);
+                updateCloudBadge('error', 'Errore di rete');
+            }
+            return false;
+        }
+
+        async function syncToGitHub() {
+            const token = getGitHubToken();
+            const repo = detectRepoName();
+            if (!token) return;
+
+            updateCloudBadge('syncing', 'Salvataggio sul Cloud...');
+            try {
+                let sha = '';
+                const getRes = await fetch(`https://api.github.com/repos/${GH_USER}/${repo}/contents/${GH_FILE}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Accept': 'application/vnd.github.v3+json' 
+                    },
+                    cache: 'no-store'
+                });
+
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    sha = fileData.sha;
+                }
+
+                const jsonString = JSON.stringify(habits, null, 2);
+                const utf8Bytes = new TextEncoder().encode(jsonString);
+                let binaryStr = '';
+                utf8Bytes.forEach(b => binaryStr += String.fromCharCode(b));
+                const contentEncoded = btoa(binaryStr);
+
+                const bodyPayload = {
+                    message: 'Aggiornamento automatico HabitFlow',
+                    content: contentEncoded
+                };
+                if (sha) bodyPayload.sha = sha;
+
+                const putRes = await fetch(`https://api.github.com/repos/${GH_USER}/${repo}/contents/${GH_FILE}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bodyPayload)
+                });
+
+                if (putRes.ok) {
+                    updateCloudBadge('ok', 'Salvato sul Cloud ✅');
+                } else {
+                    updateCloudBadge('error', `Errore salvataggio (${putRes.status})`);
+                }
+            } catch (e) {
+                console.error('Errore salvataggio su GitHub:', e);
+                updateCloudBadge('error', 'Errore rete');
+            }
+        }
+
+        // --- ICONA APPLE TOUCH ---
+        function setupApplePWA() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 180;
+                canvas.height = 180;
+                const ctx = canvas.getContext('2d');
+
+                const grad = ctx.createLinearGradient(0, 0, 180, 180);
+                grad.addColorStop(0, '#4f46e5');
+                grad.addColorStop(0.5, '#7c3aed');
+                grad.addColorStop(1, '#06b6d4');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 180, 180);
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 16;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(48, 95);
+                ctx.lineTo(78, 125);
+                ctx.lineTo(134, 62);
+                ctx.stroke();
+
+                document.getElementById('apple-icon').href = canvas.toDataURL('image/png');
+            } catch (e) {}
+        }
+
+        // --- CARICAMENTO & SALVATAGGIO STATO ---
         function loadState() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (raw) {
-                    habits = JSON.parse(raw);
-                } else {
-                    habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
-                    saveState();
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        habits = parsed;
+                        return;
+                    }
                 }
-            } catch (e) {
-                habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
-            }
+            } catch (e) {}
+            habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
         }
 
         function saveState() {
@@ -686,7 +829,6 @@
             syncToGitHub();
         }
 
-        // --- CALCOLO SERIE (STREAK SUI GIORNI PIANIFICATI FINO AD OGGI) ---
         function calculateStreak(habit) {
             let streak = 0;
             for (let d = todayIdx; d >= 0; d--) {
@@ -694,7 +836,6 @@
                 if (slot.done) {
                     streak++;
                 } else if (slot.planned) {
-                    // Se è oggi e non è ancora spuntato non azzera la serie dei giorni passati
                     if (d === todayIdx) continue;
                     break;
                 }
@@ -702,9 +843,8 @@
             return streak;
         }
 
-        // --- RENDER COMPLETO DELL'INTERFACCIA ---
+        // --- RENDER INTERFACCIA ---
         function renderAll() {
-            // Data nell'header
             const now = new Date();
             const dateStr = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
             document.getElementById('currentDateLabel').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
@@ -714,10 +854,9 @@
             renderDailyAgenda();
             renderWeeklyMatrix();
             renderCharts();
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
-        // --- 1. RENDER KPI ---
         function renderKPIs() {
             document.getElementById('kpiDayName').textContent = DAYS_SHORT[selectedDayIdx];
 
@@ -753,7 +892,6 @@
             const pctToday = plannedToday > 0 ? Math.round((doneToday / plannedToday) * 100) : 100;
             document.getElementById('kpiTodaySub').textContent = `${pctToday}% completato`;
 
-            // Prossima attività in programma nel giorno selezionato
             upcoming.sort((a, b) => a.time.localeCompare(b.time));
             const nextItem = upcoming.find(u => u.time >= nowTime) || upcoming[0];
             if (nextItem) {
@@ -771,7 +909,6 @@
             document.getElementById('kpiWeekTotal').textContent = `${totalDoneWeek} su ${totalPlannedWeek} obiettivi`;
         }
 
-        // --- 2. RENDER BARRA SELEZIONE GIORNI ---
         function renderDaySelector() {
             const container = document.getElementById('daySelectorBar');
             container.innerHTML = '';
@@ -808,7 +945,6 @@
             });
         }
 
-        // --- 3. RENDER AGENDA ORARIA DEL GIORNO SELEZIONATO ---
         function renderDailyAgenda() {
             document.getElementById('agendaDayTitle').textContent = 
                 selectedDayIdx === todayIdx ? `Oggi (${DAYS_FULL[selectedDayIdx]})` : DAYS_FULL[selectedDayIdx];
@@ -824,14 +960,10 @@
 
             habits.forEach(h => {
                 const slot = h.schedule[selectedDayIdx];
-                if (slot.planned) {
-                    scheduledItems.push({ habit: h, slot });
-                } else {
-                    extraItems.push({ habit: h, slot });
-                }
+                if (slot.planned) scheduledItems.push({ habit: h, slot });
+                else extraItems.push({ habit: h, slot });
             });
 
-            // Ordina per orario (es. 09:00 -> 14:30 -> 21:00)
             scheduledItems.sort((a, b) => a.slot.time.localeCompare(b.slot.time));
 
             const doneCount = scheduledItems.filter(i => i.slot.done).length;
@@ -855,20 +987,19 @@
 
                     card.innerHTML = `
                         <div class="flex items-center gap-3 min-w-0">
-                            <!-- Casella da spuntare grande a prova di pollice -->
                             <button onclick="toggleHabitCheck('${habit.id}', ${selectedDayIdx})" 
                                 class="check-btn w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border-2 transition ${
                                     slot.done 
                                         ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/30' 
                                         : 'bg-slate-800/90 border-slate-600 text-transparent hover:border-violet-400'
-                                }" title="Spunta completamento">
+                                }">
                                 <i data-lucide="check" class="w-6 h-6 stroke-[3]"></i>
                             </button>
 
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-extrabold" 
-                                        style="backgroundColor: ${habit.color}22; color: ${habit.color}; border: 1px solid ${habit.color}44;">
+                                        style="background-color: ${habit.color}22; color: ${habit.color}; border: 1px solid ${habit.color}44;">
                                         ⏰ ${slot.time}
                                     </span>
                                     <span class="text-xs text-amber-400 font-bold">🔥 ${calculateStreak(habit)}</span>
@@ -880,7 +1011,7 @@
                         </div>
 
                         <div class="flex items-center gap-1 shrink-0">
-                            <button onclick="openHabitModal('${habit.id}')" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800" title="Modifica giorni e orari">
+                            <button onclick="openHabitModal('${habit.id}')" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">
                                 <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -889,7 +1020,6 @@
                 });
             }
 
-            // Sezione attività non pianificate per oggi
             if (extraItems.length > 0) {
                 unscheduledSection.classList.remove('hidden');
                 extraItems.forEach(({ habit, slot }) => {
@@ -918,7 +1048,6 @@
             }
         }
 
-        // --- 4. RENDER TABELLA SETTIMANALE CON ORARI E SPUNTE ---
         function renderWeeklyMatrix() {
             const thead = document.getElementById('matrixHeaderRow');
             thead.innerHTML = `<th class="py-2.5 pr-3">Attività</th>`;
@@ -982,10 +1111,10 @@
 
                 cellsHtml += `
                     <td class="py-3 pl-2 text-right whitespace-nowrap">
-                        <button onclick="openHabitModal('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800" title="Modifica">
+                        <button onclick="openHabitModal('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
                             <i data-lucide="pencil" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteHabit('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800" title="Elimina">
+                        <button onclick="deleteHabit('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -996,8 +1125,8 @@
             });
         }
 
-        // --- 5. RENDER GRAFICI (Chart.js) ---
         function renderCharts() {
+            if (!window.Chart) return;
             const dailyRates = DAYS_SHORT.map((_, dIdx) => {
                 let planned = 0;
                 let done = 0;
@@ -1036,28 +1165,14 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: { label: ctx => ` Completamento: ${ctx.parsed.y}%` }
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { color: '#94a3b8', callback: v => v + '%' },
-                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
-                        },
-                        x: {
-                            ticks: { color: '#cbd5e1', font: { weight: 'bold' } },
-                            grid: { display: false }
-                        }
+                        y: { beginAtZero: true, max: 100, ticks: { color: '#94a3b8', callback: v => v + '%' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                        x: { ticks: { color: '#cbd5e1', font: { weight: 'bold' } }, grid: { display: false } }
                     }
                 }
             });
 
-            // Secondo grafico: Completati vs Pianificati per ogni attività
             const ctxComp = document.getElementById('goalComparisonChart').getContext('2d');
             if (comparisonChartInstance) comparisonChartInstance.destroy();
 
@@ -1070,40 +1185,18 @@
                 data: {
                     labels,
                     datasets: [
-                        {
-                            label: 'Completati',
-                            data: doneData,
-                            backgroundColor: '#10b981',
-                            borderRadius: 6
-                        },
-                        {
-                            label: 'Pianificati in Settimana',
-                            data: plannedData,
-                            backgroundColor: 'rgba(148, 163, 184, 0.25)',
-                            borderRadius: 6
-                        }
+                        { label: 'Completati', data: doneData, backgroundColor: '#10b981', borderRadius: 6 },
+                        { label: 'Pianificati', data: plannedData, backgroundColor: 'rgba(148, 163, 184, 0.25)', borderRadius: 6 }
                     ]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } }
-                        }
-                    },
+                    plugins: { legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } } } },
                     scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 7,
-                            ticks: { stepSize: 1, color: '#94a3b8' },
-                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
-                        },
-                        y: {
-                            ticks: { color: '#f1f5f9', font: { size: 11, weight: '600' } },
-                            grid: { display: false }
-                        }
+                        x: { beginAtZero: true, max: 7, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                        y: { ticks: { color: '#f1f5f9', font: { size: 11, weight: '600' } }, grid: { display: false } }
                     }
                 }
             });
@@ -1120,7 +1213,7 @@
             renderCharts();
         }
 
-        // --- INTERAZIONI: SPUNTA CASELLA, COMPLETA GIORNO, ELIMINA ---
+        // --- AZIONI UTENTE ---
         function toggleHabitCheck(habitId, dayIdx) {
             const habit = habits.find(h => h.id === habitId);
             if (!habit) return;
@@ -1147,16 +1240,14 @@
         }
 
         function resetWeekConfirm() {
-            if (!confirm('Vuoi iniziare una nuova settimana? Tutte le caselle spuntate verranno azzerate, ma i tuoi orari e giorni programmati rimarranno salvati.')) return;
-            habits.forEach(h => {
-                h.schedule.forEach(s => { s.done = false; });
-            });
+            if (!confirm('Vuoi iniziare una nuova settimana? Tutte le caselle spuntate verranno azzerate, ma i tuoi orari rimarranno salvati.')) return;
+            habits.forEach(h => h.schedule.forEach(s => { s.done = false; }));
             saveState();
             closeBackupModal();
             renderAll();
         }
 
-        // --- MODALE CREAZIONE / MODIFICA ATTIVITÀ E ORARI ---
+        // --- FORM CREAZIONE / MODIFICA ---
         function buildScheduleFormRows(scheduleData) {
             const container = document.getElementById('scheduleDaysFormList');
             container.innerHTML = '';
@@ -1193,9 +1284,7 @@
             for (let i = 0; i < 7; i++) {
                 const cb = document.getElementById(`planDay_${i}`);
                 const ti = document.getElementById(`timeDay_${i}`);
-                if (cb && cb.checked) {
-                    ti.value = bulkVal;
-                }
+                if (cb && cb.checked) ti.value = bulkVal;
             }
         }
 
@@ -1231,7 +1320,7 @@
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
         function closeHabitModal() {
@@ -1278,7 +1367,7 @@
             renderAll();
         }
 
-        // --- MODALI INSTALLAZIONE & BACKUP ---
+        // --- MODALI SECONDARI ---
         function openInstallModal() {
             const m = document.getElementById('installModal');
             m.classList.remove('hidden');
@@ -1290,6 +1379,8 @@
             m.classList.remove('flex');
         }
         function openBackupModal() {
+            document.getElementById('ghRepoInput').value = detectRepoName();
+            document.getElementById('ghTokenInput').value = getGitHubToken();
             const m = document.getElementById('backupModal');
             m.classList.remove('hidden');
             m.classList.add('flex');
@@ -1329,11 +1420,9 @@
             reader.readAsText(file);
         }
 
-        // --- NAVIGAZIONE RAPIDA MOBILE (iPhone 13) ---
         function mobileNav(tab) {
             const matrixEl = document.getElementById('matrixContainer');
             const chartsEl = document.getElementById('viewCharts');
-            const agendaEl = document.getElementById('viewAgenda');
 
             document.getElementById('navBtnAgenda').className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]";
             document.getElementById('navBtnMatrix').className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]";
@@ -1351,16 +1440,13 @@
             }
         }
 
-        // --- AVVIO ---
-        
-        
+        // --- AVVIO SICURO ---
         window.addEventListener('DOMContentLoaded', async () => {
-            await syncFromGitHub();
             setupApplePWA();
             loadState();
             renderAll();
+            await syncFromGitHub();
         });
     </script>
 </body>
 </html>
-    
