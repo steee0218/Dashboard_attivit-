@@ -92,12 +92,12 @@
     "color": "#10b981",
     "schedule": [
       {
-        "planned": false,
+        "planned": true,
         "time": "21:00",
         "done": false
       },
       {
-        "planned": true,
+        "planned": false,
         "time": "21:00",
         "done": true
       },
@@ -107,7 +107,7 @@
         "done": false
       },
       {
-        "planned": true,
+        "planned": false,
         "time": "21:00",
         "done": false
       },
@@ -117,7 +117,7 @@
         "done": false
       },
       {
-        "planned": true,
+        "planned": false,
         "time": "18:30",
         "done": false
       },
