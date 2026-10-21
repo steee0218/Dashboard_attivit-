@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HabitFlow Pro</title>
+    
+    <!-- Configurazione PWA / Apple Home Screen (iPhone 13 & iPad Pro) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HabitFlow">
+    <meta name="theme-color" content="#0b0f19">
+    
+    <!-- Icona App generata dinamicamente per la Home di iOS/iPadOS -->
+    <link rel="apple-touch-icon" id="apple-icon" href="">
+    <link rel="manifest" id="pwa-manifest" href="">
+
+    <!-- Tailwind CSS & Chart.js & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #0b0f19;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.14) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #f8fafc;
+            overscroll-behavior-y: none;
+            padding-top: calc(var(--safe-top) + 12px);
+            padding-bottom: calc(var(--safe-bottom) + 90px);
+            padding-left: calc(var(--safe-left) + 16px);
+            padding-right: calc(var(--safe-right) + 16px);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding-bottom: calc(var(--safe-bottom) + 32px);
+                padding-left: calc(var(--safe-left) + 32px);
+                padding-right: calc(var(--safe-right) + 32px);
+            }
+        }
+
+        .glass-card {
+            background: rgba(17, 24, 39, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .bottom-nav-glass {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: var(--safe-bottom);
+        }
+
+        .check-btn {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .check-btn:active {
+            transform: scale(0.88);
+        }
+
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 9999px; }
+    </style>
+</head>
+<body class="min-h-screen antialiased">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- HEADER PRINCIPALE -->
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/25">
+                        <i data-lucide="calendar-check-2" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">HabitFlow Pro</h1>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">iOS & iPadOS</span>
+                        </div>
+                        <p id="currentDateLabel" class="text-xs sm:text-sm text-slate-400 font-medium"></p>
+                    </div>
+                </div>
+
+                <!-- Tasto Guida Installazione Home su Mobile -->
+                <button onclick="openInstallModal()" class="sm:hidden p-2.5 rounded-xl glass-card text-cyan-400 hover:bg-slate-800/60 active:scale-95 transition" title="Installa su iPhone/iPad">
+                    <i data-lucide="smartphone" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Azioni Rapide Desktop / iPad -->
+            <div class="hidden sm:flex items-center gap-2.5">
+                <button onclick="openInstallModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-cyan-300 hover:bg-slate-800/80 border border-cyan-500/30 flex items-center gap-2 transition">
+                    <i data-lucide="smartphone" class="w-4 h-4"></i>
+                    Metti nella Home (iPhone/iPad)
+                </button>
+                <button onclick="openBackupModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-slate-300 hover:bg-slate-800/80 flex items-center gap-2 transition">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4 text-violet-400"></i>
+                    Sincronizza Dati
+                </button>
+                <button onclick="resetWeekConfirm()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-amber-300 hover:bg-slate-800/80 flex items-center gap-2 transition">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    Nuova Settimana
+                </button>
+                <button onclick="openHabitModal()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white text-xs font-bold shadow-lg shadow-violet-600/25 flex items-center gap-2 transition active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Nuova Attività
+                </button>
+            </div>
+        </header>
+
+        <!-- RIEPILOGO KPI (4 Card compatibili con iPhone 2x2 e iPad 4x1) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Oggi (<span id="kpiDayName">Lun</span>)</p>
+                    <p id="kpiTodayCount" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0/0</p>
+                    <p id="kpiTodaySub" class="text-[11px] text-emerald-400 font-medium mt-0.5">In programma</p>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                    <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Prossima Attività</p>
+                    <p id="kpiNextTime" class="text-xl sm:text-2xl font-extrabold text-cyan-400 mt-1">--:--</p>
+                    <p id="kpiNextTitle" class="text-[11px] text-slate-300 font-medium mt-0.5 truncate max-w-[120px] sm:max-w-[150px]">Tutto libero</p>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                    <i data-lucide="clock" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Miglior Serie</p>
+                    <p id="kpiBestStreak" class="text-2xl sm:text-3xl font-extrabold text-amber-400 mt-1">0 🔥</p>
+                    <p class="text-[11px] text-slate-400 font-medium mt-0.5">Giorni consecutivi</p>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <i data-lucide="flame" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Resa Settimana</p>
+                    <p id="kpiWeekRate" class="text-2xl sm:text-3xl font-extrabold text-violet-400 mt-1">0%</p>
+                    <p id="kpiWeekTotal" class="text-[11px] text-slate-400 font-medium mt-0.5">0 completati</p>
+                </div>
+                <div class="w-11 h-11 rounded-2xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400">
+                    <i data-lucide="trending-up" class="w-6 h-6"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- SELETTORE GIORNO DELLA SETTIMANA (Sempre visibile e comodissimo per il pollice) -->
+        <section class="glass-card rounded-2xl p-3 sm:p-4">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="calendar-days" class="w-4 h-4 text-violet-400"></i>
+                    <span class="text-xs sm:text-sm font-bold text-slate-200">Seleziona Giorno per vedere la Agenda Oraria</span>
+                </div>
+                <button onclick="completeAllDay()" class="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 active:scale-95 transition">
+                    <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                    Spunta tutto il giorno
+                </button>
+            </div>
+            <div id="daySelectorBar" class="grid grid-cols-7 gap-1.5 sm:gap-2.5">
+                <!-- Generato da JS -->
+            </div>
+        </section>
+
+        <!-- CONTENUTO PRINCIPALE: Layout Adattivo (Tabs su iPhone, Affiancato/Espanso su iPad Pro) -->
+        
+        <!-- SEZIONE 1: AGENDA ORARIA DEL GIORNO SELEZIONATO + VISTA SETTIMANALE -->
+        <div id="viewAgenda" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Colonna Sinistra (5 col su iPad Pro): Agenda del Giorno ordinata per Orario -->
+                <div class="lg:col-span-5 glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                            <div>
+                                <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="alarm-clock" class="w-5 h-5 text-cyan-400"></i>
+                                    <span>Programma di <span id="agendaDayTitle" class="text-cyan-400">Oggi</span></span>
+                                </h2>
+                                <p class="text-xs text-slate-400 mt-0.5">Attività ordinate per orario con casella di spunta</p>
+                            </div>
+                            <span id="agendaProgressBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">0/0</span>
+                        </div>
+
+                        <!-- Lista attività del giorno selezionato -->
+                        <div id="dailyAgendaList" class="space-y-3">
+                            <!-- Popolato da JS -->
+                        </div>
+
+                        <!-- Eventuali attività NON pianificate per oggi ma che puoi spuntare come extra -->
+                        <div id="unscheduledSection" class="mt-6 pt-4 border-t border-slate-800/80 hidden">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                                Altre attività (Fuori programma oggi)
+                            </p>
+                            <div id="unscheduledList" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <button onclick="openHabitModal()" class="mt-5 w-full py-3 rounded-xl border border-dashed border-slate-700 hover:border-violet-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition active:scale-98">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-violet-400"></i>
+                        Aggiungi o Pianifica Nuova Attività
+                    </button>
+                </div>
+
+                <!-- Colonna Destra (7 col su iPad Pro): Tabella Settimanale Completa con Giorni e Orari -->
+                <div id="matrixContainer" class="lg:col-span-7 glass-card rounded-2xl p-4 sm:p-5 overflow-hidden">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="layout-grid" class="w-5 h-5 text-violet-400"></i>
+                                Quadro Settimanale & Orari
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Tocca una casella per completarla (sotto ognuna vedi l'orario fissato)</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <table class="w-full min-w-[620px] text-left border-collapse">
+                            <thead>
+                                <tr id="matrixHeaderRow" class="border-b border-slate-800/80 text-[11px] font-bold uppercase text-slate-400">
+                                    <!-- Generato da JS -->
+                                </tr>
+                            </thead>
+                            <tbody id="matrixBody" class="divide-y divide-slate-800/60 text-sm">
+                                <!-- Generato da JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SEZIONE 2: GRAFICI DELLE SERIE E PROGRESSI SETTIMANALI -->
+        <section id="viewCharts" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Grafico 1: Andamento Giornaliero % Completamento -->
+            <div class="glass-card rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="activity" class="w-5 h-5 text-cyan-400"></i>
+                            Andamento Giornaliero Settimana
+                        </h3>
+                        <p class="text-xs text-slate-400">Percentuale di obiettivi pianificati portati a termine</p>
+                    </div>
+                    <div class="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+                        <button id="btnChartLine" onclick="switchChartType('line')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-600 text-white transition">Linea</button>
+                        <button id="btnChartBar" onclick="switchChartType('bar')" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Barre</button>
+                    </div>
+                </div>
+                <div class="h-64 sm:h-72 relative">
+                    <canvas id="dailyTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Grafico 2: Serie e Obiettivi Raggiunti vs Pianificati -->
+            <div class="glass-card rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="bar-chart-horizontal" class="w-5 h-5 text-emerald-400"></i>
+                            Obiettivi Completati vs Pianificati
+                        </h3>
+                        <p class="text-xs text-slate-400">Confronto settimanale per ciascuna attività</p>
+                    </div>
+                </div>
+                <div class="h-64 sm:h-72 relative">
+                    <canvas id="goalComparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- BARRA DI NAVIGAZIONE INFERIORE PER IPHONE (Stile App iOS) -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bottom-nav-glass z-40 px-4 pt-2 pb-3 flex items-center justify-around">
+        <button onclick="mobileNav('agenda')" id="navBtnAgenda" class="flex flex-col items-center gap-1 text-violet-400 font-semibold text-[11px]">
+            <i data-lucide="alarm-clock" class="w-5 h-5"></i>
+            <span>Oggi & Orari</span>
+        </button>
+        <button onclick="mobileNav('matrix')" id="navBtnMatrix" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]">
+            <i data-lucide="calendar-range" class="w-5 h-5"></i>
+            <span>Settimana</span>
+        </button>
+        <button onclick="openHabitModal()" class="flex items-center justify-center w-12 h-12 -mt-5 rounded-2xl bg-gradient-to-tr from-violet-600 to-cyan-500 text-white shadow-lg shadow-violet-500/40 active:scale-95 transition">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+        </button>
+        <button onclick="mobileNav('charts')" id="navBtnCharts" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+            <span>Grafici</span>
+        </button>
+        <button onclick="openBackupModal()" id="navBtnSync" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]">
+            <i data-lucide="settings-2" class="w-5 h-5"></i>
+            <span>Opzioni</span>
+        </button>
+    </nav>
+
+    <!-- MODALE: CREA / MODIFICA ATTIVITÀ CON GIORNI E ORARI SPECIFICI -->
+    <div id="habitModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-card rounded-3xl max-w-lg w-full p-5 sm:p-6 border border-slate-700/80 my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <h3 id="modalTitle" class="text-lg font-bold text-white">Pianifica Attività & Orari</h3>
+                <button onclick="closeHabitModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="habitForm" onsubmit="saveHabit(event)" class="space-y-4">
+                <input type="hidden" id="habitId">
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Nome Attività / Obiettivo</label>
+                    <input type="text" id="habitName" required placeholder="Es. Allenamento Memoria PAO, Calcetto, Studio..." 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-violet-500">
+                </div>
+
+                <!-- Scelta Emoji & Colore -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Icona</label>
+                        <select id="habitIcon" class="w-full px-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-violet-500">
+                            <option value="🧠">🧠 Memoria / PAO</option>
+                            <option value="📚">📚 Studio / Esami</option>
+                            <option value="⚽">⚽ Calcetto / Sport</option>
+                            <option value="💻">💻 Python / Coding</option>
+                            <option value="💧">💧 Idratazione</option>
+                            <option value="📖">📖 Lettura</option>
+                            <option value="🏋️">🏋️ Palestra</option>
+                            <option value="🎯">🎯 Obiettivo</option>
+                            <option value="⚡">⚡ Energia / Routine</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Colore Neon</label>
+                        <select id="habitColor" class="w-full px-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-violet-500">
+                            <option value="#8b5cf6">🟣 Viola Neon</option>
+                            <option value="#06b6d4">🔵 Ciano</option>
+                            <option value="#10b981">🟢 Verde Smeraldo</option>
+                            <option value="#f59e0b">🟠 Ambra / Oro</option>
+                            <option value="#ec4899">🩷 Rosa / Magenta</option>
+                            <option value="#3b82f6">🔷 Blu Elettrico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Impostazione Rapida Orario per tutti i giorni selezionati -->
+                <div class="p-3 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                            Giorni e Orari in cui devi farla
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <input type="time" id="bulkTimeInput" value="18:00" class="px-2 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white">
+                            <button type="button" onclick="applyBulkTime()" class="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-semibold hover:bg-cyan-500/30">
+                                Applica a selezionati
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-1.5 text-[11px]">
+                        <button type="button" onclick="selectPresetDays('all')" class="px-2 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white">Tutti i giorni</button>
+                        <button type="button" onclick="selectPresetDays('weekdays')" class="px-2 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white">Lun - Ven</button>
+                        <button type="button" onclick="selectPresetDays('weekend')" class="px-2 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white">Weekend</button>
+                    </div>
+
+                    <!-- Lista dei 7 giorni con switch e orario individuale -->
+                    <div id="scheduleDaysFormList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <!-- Generato da JS -->
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-2">
+                    <button type="button" onclick="closeHabitModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">
+                        Annulla
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-xs font-bold shadow-lg shadow-violet-600/30">
+                        Salva Attività
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE: GUIDA INSTALLAZIONE HOME SU IPHONE 13 E IPAD PRO -->
+    <div id="installModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                        <i data-lucide="smartphone" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white">Metti nella Home (iPhone 13 & iPad Pro)</h3>
+                </div>
+                <button onclick="closeInstallModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3.5 text-xs sm:text-sm text-slate-300">
+                <p class="text-slate-400">Questa versione include già i <strong>meta tag nativi Apple PWA</strong> e un'icona ad alta risoluzione generata in automatico:</p>
+                
+                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                        <p>Carica questo file <code>.html</code> su <strong>GitHub Pages</strong> (rinominandolo <code>index.html</code>) o trascinalo su <strong>app.netlify.com/drop</strong>.</p>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                        <p>Apri il link ottenuto dentro <strong>Safari</strong> sul tuo iPhone 13 o iPad Pro.</p>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                        <p>Tocca il tasto <strong>Condividi</strong> (quadrato con freccia in alto) e seleziona <strong>"Aggiungi alla schermata Home"</strong>.</p>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5">
+                    <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
+                    <span>Si aprirà a tutto schermo senza le barre di Safari, con il rispetto della tacca (Notch) dell'iPhone 13!</span>
+                </div>
+            </div>
+
+            <button onclick="closeInstallModal()" class="mt-5 w-full py-2.5 rounded-xl bg-violet-600 text-white text-xs font-bold">
+                Perfetto, ho capito!
+            </button>
+        </div>
+    </div>
+
+    <!-- MODALE: OPZIONI & SINCRONIZZAZIONE TRA IPHONE E IPAD -->
+    <div id="backupModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="settings-2" class="w-5 h-5 text-violet-400"></i>
+                    Gestione Settimana & Sincronizzazione
+                </h3>
+                <button onclick="closeBackupModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                    <p class="text-xs font-bold uppercase text-amber-400">Azioni Settimanali</p>
+                    <button onclick="resetWeekConfirm()" class="w-full py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-2 transition">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        Inizia Nuova Settimana (Azzera spunte, tieni orari)
+                    </button>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                    <p class="text-xs font-bold uppercase text-cyan-400">Passa dati tra iPhone 13 e iPad Pro</p>
+                    <p class="text-xs text-slate-400">Puoi esportare il file JSON o copiare il codice per avere gli stessi orari e spunte su entrambi i dispositivi.</p>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="exportDataJson()" class="py-2.5 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1.5">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Esporta Backup
+                        </button>
+                        <label class="py-2.5 px-3 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-500/30 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            Importa Backup
+                            <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeBackupModal()" class="mt-5 w-full py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">
+                Chiudi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- COSTANTI GIORNI ---
+        const DAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+        const DAYS_FULL = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+        const STORAGE_KEY = 'habitflow_pro_v2_state';
+
+        // Calcola indice del giorno corrente (0 = Lunedì ... 6 = Domenica)
+        const jsDay = new Date().getDay();
+        const todayIdx = jsDay === 0 ? 6 : jsDay - 1;
+        let selectedDayIdx = todayIdx;
+        let currentChartType = 'line';
+        let trendChartInstance = null;
+        let comparisonChartInstance = null;
+
+        // --- DATI PREDEFINITI CON GIORNI E ORARI SPECIFICI ---
+        const DEFAULT_HABITS = [
+            {
+                id: 'h1',
+                name: 'Allenamento Memoria / PAO',
+                icon: '🧠',
+                color: '#8b5cf6',
+                schedule: [
+                    { planned: true, time: '09:00', done: true },
+                    { planned: true, time: '09:00', done: true },
+                    { planned: true, time: '09:00', done: false },
+                    { planned: true, time: '09:00', done: false },
+                    { planned: true, time: '09:00', done: false },
+                    { planned: false, time: '10:30', done: false },
+                    { planned: true, time: '10:30', done: false }
+                ]
+            },
+            {
+                id: 'h2',
+                name: 'Sessione Studio Ingegneria',
+                icon: '📚',
+                color: '#06b6d4',
+                schedule: [
+                    { planned: true, time: '14:30', done: true },
+                    { planned: true, time: '14:30', done: true },
+                    { planned: true, time: '14:30', done: true },
+                    { planned: true, time: '14:30', done: false },
+                    { planned: true, time: '14:30', done: false },
+                    { planned: true, time: '15:00', done: false },
+                    { planned: false, time: '15:00', done: false }
+                ]
+            },
+            {
+                id: 'h3',
+                name: 'Partita / Allenamento Calcetto',
+                icon: '⚽',
+                color: '#10b981',
+                schedule: [
+                    { planned: false, time: '21:00', done: false },
+                    { planned: true, time: '21:00', done: true },
+                    { planned: false, time: '21:00', done: false },
+                    { planned: true, time: '21:00', done: false },
+                    { planned: false, time: '21:00', done: false },
+                    { planned: true, time: '18:30', done: false },
+                    { planned: false, time: '18:30', done: false }
+                ]
+            },
+            {
+                id: 'h4',
+                name: 'Progetti Python & Automazioni',
+                icon: '💻',
+                color: '#f59e0b',
+                schedule: [
+                    { planned: true, time: '18:30', done: true },
+                    { planned: false, time: '18:30', done: false },
+                    { planned: true, time: '18:30', done: false },
+                    { planned: false, time: '18:30', done: false },
+                    { planned: true, time: '18:30', done: false },
+                    { planned: true, time: '16:30', done: false },
+                    { planned: false, time: '16:30', done: false }
+                ]
+            },
+            {
+                id: 'h5',
+                name: 'Lettura Serale',
+                icon: '📖',
+                color: '#ec4899',
+                schedule: [
+                    { planned: true, time: '22:45', done: true },
+                    { planned: true, time: '22:45', done: true },
+                    { planned: true, time: '22:45', done: false },
+                    { planned: true, time: '22:45', done: false },
+                    { planned: true, time: '22:45', done: false },
+                    { planned: true, time: '23:00', done: false },
+                    { planned: true, time: '22:45', done: false }
+                ]
+            }
+        ];
+
+        let habits = [];
+
+        // --- GENERAZIONE ICONA APPLE TOUCH E MANIFEST PWA ---
+        function setupApplePWA() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 180;
+            canvas.height = 180;
+            const ctx = canvas.getContext('2d');
+
+            // Sfondo gradiente scuro/viola
+            const grad = ctx.createLinearGradient(0, 0, 180, 180);
+            grad.addColorStop(0, '#4f46e5');
+            grad.addColorStop(0.5, '#7c3aed');
+            grad.addColorStop(1, '#06b6d4');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 180, 180);
+
+            // Simbolo spunta bianca centrale
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 16;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(48, 95);
+            ctx.lineTo(78, 125);
+            ctx.lineTo(134, 62);
+            ctx.stroke();
+
+            const iconDataUrl = canvas.toDataURL('image/png');
+            document.getElementById('apple-icon').href = iconDataUrl;
+
+            const manifest = {
+                name: "HabitFlow Pro",
+                short_name: "HabitFlow",
+                start_url: ".",
+                display: "standalone",
+                background_color: "#0b0f19",
+                theme_color: "#0b0f19",
+                icons: [{ src: iconDataUrl, sizes: "180x180", type: "image/png" }]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            document.getElementById('pwa-manifest').href = URL.createObjectURL(manifestBlob);
+        }
+
+        // --- CARICAMENTO & SALVATAGGIO LOCALSTORAGE ---
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    habits = JSON.parse(raw);
+                } else {
+                    habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+                    saveState();
+                }
+            } catch (e) {
+                habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+        }
+
+        // --- CALCOLO SERIE (STREAK SUI GIORNI PIANIFICATI FINO AD OGGI) ---
+        function calculateStreak(habit) {
+            let streak = 0;
+            for (let d = todayIdx; d >= 0; d--) {
+                const slot = habit.schedule[d];
+                if (slot.done) {
+                    streak++;
+                } else if (slot.planned) {
+                    // Se è oggi e non è ancora spuntato non azzera la serie dei giorni passati
+                    if (d === todayIdx) continue;
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        // --- RENDER COMPLETO DELL'INTERFACCIA ---
+        function renderAll() {
+            // Data nell'header
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+            document.getElementById('currentDateLabel').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+            renderKPIs();
+            renderDaySelector();
+            renderDailyAgenda();
+            renderWeeklyMatrix();
+            renderCharts();
+            lucide.createIcons();
+        }
+
+        // --- 1. RENDER KPI ---
+        function renderKPIs() {
+            document.getElementById('kpiDayName').textContent = DAYS_SHORT[selectedDayIdx];
+
+            let plannedToday = 0;
+            let doneToday = 0;
+            const nowTime = new Date().toTimeString().slice(0, 5);
+            let upcoming = [];
+
+            let bestStreak = 0;
+            let totalPlannedWeek = 0;
+            let totalDoneWeek = 0;
+
+            habits.forEach(h => {
+                const sToday = h.schedule[selectedDayIdx];
+                if (sToday.planned) {
+                    plannedToday++;
+                    if (sToday.done) doneToday++;
+                    else upcoming.push({ time: sToday.time, name: h.name, icon: h.icon });
+                } else if (sToday.done) {
+                    doneToday++;
+                }
+
+                const st = calculateStreak(h);
+                if (st > bestStreak) bestStreak = st;
+
+                h.schedule.forEach(s => {
+                    if (s.planned) totalPlannedWeek++;
+                    if (s.done) totalDoneWeek++;
+                });
+            });
+
+            document.getElementById('kpiTodayCount').textContent = `${doneToday}/${plannedToday}`;
+            const pctToday = plannedToday > 0 ? Math.round((doneToday / plannedToday) * 100) : 100;
+            document.getElementById('kpiTodaySub').textContent = `${pctToday}% completato`;
+
+            // Prossima attività in programma nel giorno selezionato
+            upcoming.sort((a, b) => a.time.localeCompare(b.time));
+            const nextItem = upcoming.find(u => u.time >= nowTime) || upcoming[0];
+            if (nextItem) {
+                document.getElementById('kpiNextTime').textContent = nextItem.time;
+                document.getElementById('kpiNextTitle').textContent = `${nextItem.icon} ${nextItem.name}`;
+            } else {
+                document.getElementById('kpiNextTime').textContent = 'Tutto fatto!';
+                document.getElementById('kpiNextTitle').textContent = 'Nessuna in sospeso ✨';
+            }
+
+            document.getElementById('kpiBestStreak').textContent = `${bestStreak} 🔥`;
+
+            const weekRate = totalPlannedWeek > 0 ? Math.round((totalDoneWeek / totalPlannedWeek) * 100) : 0;
+            document.getElementById('kpiWeekRate').textContent = `${weekRate}%`;
+            document.getElementById('kpiWeekTotal').textContent = `${totalDoneWeek} su ${totalPlannedWeek} obiettivi`;
+        }
+
+        // --- 2. RENDER BARRA SELEZIONE GIORNI ---
+        function renderDaySelector() {
+            const container = document.getElementById('daySelectorBar');
+            container.innerHTML = '';
+
+            DAYS_SHORT.forEach((dayName, idx) => {
+                let planned = 0;
+                let done = 0;
+                habits.forEach(h => {
+                    if (h.schedule[idx].planned) planned++;
+                    if (h.schedule[idx].done) done++;
+                });
+
+                const isSelected = idx === selectedDayIdx;
+                const isToday = idx === todayIdx;
+
+                const btn = document.createElement('button');
+                btn.onclick = () => { selectedDayIdx = idx; renderAll(); };
+                btn.className = `p-2 sm:p-2.5 rounded-xl flex flex-col items-center justify-center transition border ${
+                    isSelected 
+                        ? 'bg-gradient-to-b from-violet-600/90 to-indigo-700/90 border-violet-400 text-white shadow-lg shadow-violet-600/30 scale-[1.02]' 
+                        : 'bg-slate-900/70 border-slate-800 text-slate-300 hover:bg-slate-800/80'
+                }`;
+
+                btn.innerHTML = `
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs sm:text-sm font-bold">${dayName}</span>
+                        ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>' : ''}
+                    </div>
+                    <span class="text-[10px] sm:text-xs mt-1 px-1.5 py-0.5 rounded-md ${
+                        isSelected ? 'bg-black/30 text-cyan-200 font-bold' : 'bg-slate-800 text-slate-400'
+                    }">${done}/${planned}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        // --- 3. RENDER AGENDA ORARIA DEL GIORNO SELEZIONATO ---
+        function renderDailyAgenda() {
+            document.getElementById('agendaDayTitle').textContent = 
+                selectedDayIdx === todayIdx ? `Oggi (${DAYS_FULL[selectedDayIdx]})` : DAYS_FULL[selectedDayIdx];
+
+            const listEl = document.getElementById('dailyAgendaList');
+            const unscheduledSection = document.getElementById('unscheduledSection');
+            const unscheduledList = document.getElementById('unscheduledList');
+            listEl.innerHTML = '';
+            unscheduledList.innerHTML = '';
+
+            const scheduledItems = [];
+            const extraItems = [];
+
+            habits.forEach(h => {
+                const slot = h.schedule[selectedDayIdx];
+                if (slot.planned) {
+                    scheduledItems.push({ habit: h, slot });
+                } else {
+                    extraItems.push({ habit: h, slot });
+                }
+            });
+
+            // Ordina per orario (es. 09:00 -> 14:30 -> 21:00)
+            scheduledItems.sort((a, b) => a.slot.time.localeCompare(b.slot.time));
+
+            const doneCount = scheduledItems.filter(i => i.slot.done).length;
+            document.getElementById('agendaProgressBadge').textContent = `${doneCount}/${scheduledItems.length} completate`;
+
+            if (scheduledItems.length === 0) {
+                listEl.innerHTML = `
+                    <div class="p-6 rounded-2xl bg-slate-900/50 border border-slate-800/80 text-center space-y-2">
+                        <p class="text-sm font-semibold text-slate-300">Nessuna attività pianificata per ${DAYS_FULL[selectedDayIdx]}</p>
+                        <p class="text-xs text-slate-400">Puoi goderti il riposo o aggiungere un obiettivo con orario.</p>
+                    </div>
+                `;
+            } else {
+                scheduledItems.forEach(({ habit, slot }) => {
+                    const card = document.createElement('div');
+                    card.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
+                        slot.done 
+                            ? 'bg-emerald-950/25 border-emerald-500/30' 
+                            : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                    }`;
+
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3 min-w-0">
+                            <!-- Casella da spuntare grande a prova di pollice -->
+                            <button onclick="toggleHabitCheck('${habit.id}', ${selectedDayIdx})" 
+                                class="check-btn w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border-2 transition ${
+                                    slot.done 
+                                        ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/30' 
+                                        : 'bg-slate-800/90 border-slate-600 text-transparent hover:border-violet-400'
+                                }" title="Spunta completamento">
+                                <i data-lucide="check" class="w-6 h-6 stroke-[3]"></i>
+                            </button>
+
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-extrabold" 
+                                        style="backgroundColor: ${habit.color}22; color: ${habit.color}; border: 1px solid ${habit.color}44;">
+                                        ⏰ ${slot.time}
+                                    </span>
+                                    <span class="text-xs text-amber-400 font-bold">🔥 ${calculateStreak(habit)}</span>
+                                </div>
+                                <p class="text-sm sm:text-base font-bold mt-1 truncate ${slot.done ? 'line-through text-slate-400' : 'text-white'}">
+                                    ${habit.icon} ${habit.name}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="openHabitModal('${habit.id}')" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800" title="Modifica giorni e orari">
+                                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    `;
+                    listEl.appendChild(card);
+                });
+            }
+
+            // Sezione attività non pianificate per oggi
+            if (extraItems.length > 0) {
+                unscheduledSection.classList.remove('hidden');
+                extraItems.forEach(({ habit, slot }) => {
+                    const row = document.createElement('div');
+                    row.className = "p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/60 flex items-center justify-between";
+                    row.innerHTML = `
+                        <div class="flex items-center gap-2.5">
+                            <button onclick="toggleHabitCheck('${habit.id}', ${selectedDayIdx})" 
+                                class="check-btn w-8 h-8 rounded-xl flex items-center justify-center border ${
+                                    slot.done 
+                                        ? 'bg-emerald-500 border-emerald-400 text-slate-950' 
+                                        : 'bg-slate-800 border-slate-700 text-transparent'
+                                }">
+                                <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
+                            </button>
+                            <span class="text-xs font-medium ${slot.done ? 'line-through text-slate-400' : 'text-slate-300'}">${habit.icon} ${habit.name}</span>
+                        </div>
+                        <button onclick="openHabitModal('${habit.id}')" class="text-[11px] font-semibold text-violet-400 hover:underline px-2 py-1">
+                            + Pianifica oggi
+                        </button>
+                    `;
+                    unscheduledList.appendChild(row);
+                });
+            } else {
+                unscheduledSection.classList.add('hidden');
+            }
+        }
+
+        // --- 4. RENDER TABELLA SETTIMANALE CON ORARI E SPUNTE ---
+        function renderWeeklyMatrix() {
+            const thead = document.getElementById('matrixHeaderRow');
+            thead.innerHTML = `<th class="py-2.5 pr-3">Attività</th>`;
+            DAYS_SHORT.forEach((d, idx) => {
+                const isSel = idx === selectedDayIdx;
+                thead.innerHTML += `
+                    <th class="py-2.5 px-1.5 text-center cursor-pointer ${isSel ? 'text-cyan-400 font-extrabold' : ''}" onclick="selectedDayIdx=${idx};renderAll();">
+                        ${d}
+                    </th>
+                `;
+            });
+            thead.innerHTML += `<th class="py-2.5 pl-2 text-right">Azioni</th>`;
+
+            const tbody = document.getElementById('matrixBody');
+            tbody.innerHTML = '';
+
+            habits.forEach(habit => {
+                const plannedDaysCount = habit.schedule.filter(s => s.planned).length;
+                const doneDaysCount = habit.schedule.filter(s => s.done).length;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/30 transition";
+
+                let cellsHtml = `
+                    <td class="py-3 pr-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-lg">${habit.icon}</span>
+                            <div>
+                                <p class="font-bold text-white text-xs sm:text-sm leading-tight">${habit.name}</p>
+                                <span class="text-[11px] text-slate-400">${doneDaysCount}/${plannedDaysCount} sett. • 🔥 ${calculateStreak(habit)}</span>
+                            </div>
+                        </div>
+                    </td>
+                `;
+
+                habit.schedule.forEach((slot, dIdx) => {
+                    const isSel = dIdx === selectedDayIdx;
+                    cellsHtml += `
+                        <td class="py-2.5 px-1 text-center align-middle ${isSel ? 'bg-violet-500/5 rounded-lg' : ''}">
+                            <div class="flex flex-col items-center justify-center gap-1">
+                                <button onclick="toggleHabitCheck('${habit.id}', ${dIdx})" 
+                                    class="check-btn w-9 h-9 rounded-xl flex items-center justify-center border transition ${
+                                        slot.done 
+                                            ? 'text-slate-950 border-transparent shadow-md' 
+                                            : slot.planned 
+                                                ? 'bg-slate-900 border-slate-600 text-transparent hover:border-slate-400' 
+                                                : 'bg-slate-900/30 border-slate-800/70 text-transparent opacity-40 hover:opacity-80'
+                                    }"
+                                    style="${slot.done ? `background-color: ${habit.color};` : ''}">
+                                    <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
+                                </button>
+                                <span class="text-[10px] font-semibold tracking-tighter ${
+                                    slot.planned ? (slot.done ? 'text-emerald-400' : 'text-slate-400') : 'text-slate-600'
+                                }">
+                                    ${slot.planned ? slot.time : '—'}
+                                </span>
+                            </div>
+                        </td>
+                    `;
+                });
+
+                cellsHtml += `
+                    <td class="py-3 pl-2 text-right whitespace-nowrap">
+                        <button onclick="openHabitModal('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800" title="Modifica">
+                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteHabit('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800" title="Elimina">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+
+                tr.innerHTML = cellsHtml;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- 5. RENDER GRAFICI (Chart.js) ---
+        function renderCharts() {
+            const dailyRates = DAYS_SHORT.map((_, dIdx) => {
+                let planned = 0;
+                let done = 0;
+                habits.forEach(h => {
+                    if (h.schedule[dIdx].planned) planned++;
+                    if (h.schedule[dIdx].done) done++;
+                });
+                return planned > 0 ? Math.min(100, Math.round((done / planned) * 100)) : 0;
+            });
+
+            const ctxTrend = document.getElementById('dailyTrendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            const grad = ctxTrend.createLinearGradient(0, 0, 0, 260);
+            grad.addColorStop(0, 'rgba(139, 92, 246, 0.45)');
+            grad.addColorStop(1, 'rgba(6, 182, 212, 0.02)');
+
+            trendChartInstance = new Chart(ctxTrend, {
+                type: currentChartType,
+                data: {
+                    labels: DAYS_SHORT,
+                    datasets: [{
+                        label: '% Obiettivi Completati',
+                        data: dailyRates,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: currentChartType === 'line' ? grad : 'rgba(139, 92, 246, 0.7)',
+                        borderWidth: 3,
+                        borderRadius: 8,
+                        fill: currentChartType === 'line',
+                        tension: 0.35,
+                        pointBackgroundColor: '#06b6d4',
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: { label: ctx => ` Completamento: ${ctx.parsed.y}%` }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#94a3b8', callback: v => v + '%' },
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#cbd5e1', font: { weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Secondo grafico: Completati vs Pianificati per ogni attività
+            const ctxComp = document.getElementById('goalComparisonChart').getContext('2d');
+            if (comparisonChartInstance) comparisonChartInstance.destroy();
+
+            const labels = habits.map(h => `${h.icon} ${h.name.length > 18 ? h.name.slice(0, 18) + '…' : h.name}`);
+            const doneData = habits.map(h => h.schedule.filter(s => s.done).length);
+            const plannedData = habits.map(h => h.schedule.filter(s => s.planned).length);
+
+            comparisonChartInstance = new Chart(ctxComp, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Completati',
+                            data: doneData,
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Pianificati in Settimana',
+                            data: plannedData,
+                            backgroundColor: 'rgba(148, 163, 184, 0.25)',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 7,
+                            ticks: { stepSize: 1, color: '#94a3b8' },
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#f1f5f9', font: { size: 11, weight: '600' } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchChartType(type) {
+            currentChartType = type;
+            document.getElementById('btnChartLine').className = type === 'line'
+                ? 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-600 text-white transition'
+                : 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+            document.getElementById('btnChartBar').className = type === 'bar'
+                ? 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-600 text-white transition'
+                : 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+            renderCharts();
+        }
+
+        // --- INTERAZIONI: SPUNTA CASELLA, COMPLETA GIORNO, ELIMINA ---
+        function toggleHabitCheck(habitId, dayIdx) {
+            const habit = habits.find(h => h.id === habitId);
+            if (!habit) return;
+            habit.schedule[dayIdx].done = !habit.schedule[dayIdx].done;
+            saveState();
+            renderAll();
+        }
+
+        function completeAllDay() {
+            habits.forEach(h => {
+                if (h.schedule[selectedDayIdx].planned) {
+                    h.schedule[selectedDayIdx].done = true;
+                }
+            });
+            saveState();
+            renderAll();
+        }
+
+        function deleteHabit(habitId) {
+            if (!confirm('Vuoi eliminare questa attività?')) return;
+            habits = habits.filter(h => h.id !== habitId);
+            saveState();
+            renderAll();
+        }
+
+        function resetWeekConfirm() {
+            if (!confirm('Vuoi iniziare una nuova settimana? Tutte le caselle spuntate verranno azzerate, ma i tuoi orari e giorni programmati rimarranno salvati.')) return;
+            habits.forEach(h => {
+                h.schedule.forEach(s => { s.done = false; });
+            });
+            saveState();
+            closeBackupModal();
+            renderAll();
+        }
+
+        // --- MODALE CREAZIONE / MODIFICA ATTIVITÀ E ORARI ---
+        function buildScheduleFormRows(scheduleData) {
+            const container = document.getElementById('scheduleDaysFormList');
+            container.innerHTML = '';
+
+            DAYS_FULL.forEach((dayName, idx) => {
+                const item = scheduleData ? scheduleData[idx] : { planned: idx < 5, time: '18:00', done: false };
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2 rounded-xl bg-slate-800/70 border border-slate-700/60";
+                row.innerHTML = `
+                    <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="planDay_${idx}" ${item.planned ? 'checked' : ''} 
+                            onchange="toggleTimeInputState(${idx})"
+                            class="w-4 h-4 rounded accent-violet-500">
+                        <span class="text-xs sm:text-sm font-semibold text-white">${dayName}</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-slate-400">Orario:</span>
+                        <input type="time" id="timeDay_${idx}" value="${item.time}" ${!item.planned ? 'disabled' : ''}
+                            class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs font-bold text-cyan-300 disabled:opacity-35">
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function toggleTimeInputState(idx) {
+            const cb = document.getElementById(`planDay_${idx}`);
+            const ti = document.getElementById(`timeDay_${idx}`);
+            ti.disabled = !cb.checked;
+        }
+
+        function applyBulkTime() {
+            const bulkVal = document.getElementById('bulkTimeInput').value || '18:00';
+            for (let i = 0; i < 7; i++) {
+                const cb = document.getElementById(`planDay_${i}`);
+                const ti = document.getElementById(`timeDay_${i}`);
+                if (cb && cb.checked) {
+                    ti.value = bulkVal;
+                }
+            }
+        }
+
+        function selectPresetDays(preset) {
+            for (let i = 0; i < 7; i++) {
+                const cb = document.getElementById(`planDay_${i}`);
+                if (preset === 'all') cb.checked = true;
+                else if (preset === 'weekdays') cb.checked = i < 5;
+                else if (preset === 'weekend') cb.checked = i >= 5;
+                toggleTimeInputState(i);
+            }
+        }
+
+        function openHabitModal(habitId = null) {
+            const modal = document.getElementById('habitModal');
+            const habit = habits.find(h => h.id === habitId);
+
+            if (habit) {
+                document.getElementById('modalTitle').textContent = 'Modifica Attività & Orari';
+                document.getElementById('habitId').value = habit.id;
+                document.getElementById('habitName').value = habit.name;
+                document.getElementById('habitIcon').value = habit.icon;
+                document.getElementById('habitColor').value = habit.color;
+                buildScheduleFormRows(habit.schedule);
+            } else {
+                document.getElementById('modalTitle').textContent = 'Nuova Attività con Giorni e Orari';
+                document.getElementById('habitId').value = '';
+                document.getElementById('habitName').value = '';
+                document.getElementById('habitIcon').value = '🎯';
+                document.getElementById('habitColor').value = '#8b5cf6';
+                buildScheduleFormRows(null);
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeHabitModal() {
+            const modal = document.getElementById('habitModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveHabit(e) {
+            e.preventDefault();
+            const id = document.getElementById('habitId').value;
+            const name = document.getElementById('habitName').value.trim();
+            const icon = document.getElementById('habitIcon').value;
+            const color = document.getElementById('habitColor').value;
+
+            if (!name) return;
+
+            const existing = habits.find(h => h.id === id);
+            const newSchedule = [];
+            for (let i = 0; i < 7; i++) {
+                const planned = document.getElementById(`planDay_${i}`).checked;
+                const time = document.getElementById(`timeDay_${i}`).value || '18:00';
+                const prevDone = existing ? existing.schedule[i].done : false;
+                newSchedule.push({ planned, time, done: prevDone });
+            }
+
+            if (existing) {
+                existing.name = name;
+                existing.icon = icon;
+                existing.color = color;
+                existing.schedule = newSchedule;
+            } else {
+                habits.push({
+                    id: 'h_' + Date.now(),
+                    name,
+                    icon,
+                    color,
+                    schedule: newSchedule
+                });
+            }
+
+            saveState();
+            closeHabitModal();
+            renderAll();
+        }
+
+        // --- MODALI INSTALLAZIONE & BACKUP ---
+        function openInstallModal() {
+            const m = document.getElementById('installModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeInstallModal() {
+            const m = document.getElementById('installModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+        function openBackupModal() {
+            const m = document.getElementById('backupModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeBackupModal() {
+            const m = document.getElementById('backupModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function exportDataJson() {
+            const blob = new Blob([JSON.stringify(habits, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `habitflow_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function importDataJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (Array.isArray(parsed)) {
+                        habits = parsed;
+                        saveState();
+                        closeBackupModal();
+                        renderAll();
+                        alert('Backup importato con successo!');
+                    }
+                } catch (err) {
+                    alert('File JSON non valido.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- NAVIGAZIONE RAPIDA MOBILE (iPhone 13) ---
+        function mobileNav(tab) {
+            const matrixEl = document.getElementById('matrixContainer');
+            const chartsEl = document.getElementById('viewCharts');
+            const agendaEl = document.getElementById('viewAgenda');
+
+            document.getElementById('navBtnAgenda').className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]";
+            document.getElementById('navBtnMatrix').className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]";
+            document.getElementById('navBtnCharts').className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]";
+
+            if (tab === 'agenda') {
+                document.getElementById('navBtnAgenda').className = "flex flex-col items-center gap-1 text-violet-400 font-semibold text-[11px]";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (tab === 'matrix') {
+                document.getElementById('navBtnMatrix').className = "flex flex-col items-center gap-1 text-violet-400 font-semibold text-[11px]";
+                matrixEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (tab === 'charts') {
+                document.getElementById('navBtnCharts').className = "flex flex-col items-center gap-1 text-violet-400 font-semibold text-[11px]";
+                chartsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // --- AVVIO ---
+        window.addEventListener('DOMContentLoaded', () => {
+            setupApplePWA();
+            loadState();
+            renderAll();
+        });
+    </script>
+</body>
+</html>
