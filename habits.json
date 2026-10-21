@@ -7,27 +7,27 @@
     "schedule": [
       {
         "planned": true,
-        "time": "09:00",
+        "time": "10:00",
         "done": true
       },
       {
         "planned": true,
-        "time": "09:00",
+        "time": "10:00",
         "done": true
       },
       {
-        "planned": true,
+        "planned": false,
+        "time": "09:00",
+        "done": false
+      },
+      {
+        "planned": false,
         "time": "09:00",
         "done": false
       },
       {
         "planned": true,
-        "time": "09:00",
-        "done": false
-      },
-      {
-        "planned": true,
-        "time": "09:00",
+        "time": "10:00",
         "done": false
       },
       {
@@ -36,7 +36,7 @@
         "done": false
       },
       {
-        "planned": true,
+        "planned": false,
         "time": "10:30",
         "done": false
       }
