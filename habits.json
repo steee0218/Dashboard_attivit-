@@ -1,0 +1,217 @@
+[
+  {
+    "id": "h1",
+    "name": "Allenamento Memoria / PAO",
+    "icon": "🧠",
+    "color": "#8b5cf6",
+    "schedule": [
+      {
+        "planned": true,
+        "time": "09:00",
+        "done": true
+      },
+      {
+        "planned": true,
+        "time": "09:00",
+        "done": true
+      },
+      {
+        "planned": true,
+        "time": "09:00",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "09:00",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "09:00",
+        "done": false
+      },
+      {
+        "planned": false,
+        "time": "10:30",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "10:30",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "h2",
+    "name": "Sessione Studio Ingegneria",
+    "icon": "📚",
+    "color": "#06b6d4",
+    "schedule": [
+      {
+        "planned": true,
+        "time": "14:30",
+        "done": true
+      },
+      {
+        "planned": true,
+        "time": "14:30",
+        "done": true
+      },
+      {
+        "planned": true,
+        "time": "14:30",
+        "done": true
+      },
+      {
+        "planned": true,
+        "time": "14:30",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "14:30",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "15:00",
+        "done": false
+      },
+      {
+        "planned": false,
+        "time": "15:00",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "h3",
+    "name": "Partita / Allenamento Calcetto",
+    "icon": "⚽",
+    "color": "#10b981",
+    "schedule": [
+      {
+        "planned": false,
+        "time": "21:00",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "21:00",
+        "done": true
+      },
+      {
+        "planned": false,
+        "time": "21:00",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "21:00",
+        "done": false
+      },
+      {
+        "planned": false,
+        "time": "21:00",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "18:30",
+        "done": false
+      },
+      {
+        "planned": false,
+        "time": "18:30",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "h4",
+    "name": "Progetti Python & Automazioni",
+    "icon": "💻",
+    "color": "#f59e0b",
+    "schedule": [
+      {
+        "planned": true,
+        "time": "18:30",
+        "done": true
+      },
+      {
+        "planned": false,
+        "time": "18:30",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "18:30",
+        "done": false
+      },
+      {
+        "planned": false,
+        "time": "18:30",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "18:30",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "16:30",
+        "done": false
+      },
+      {
+        "planned": false,
+        "time": "16:30",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "h5",
+    "name": "Lettura Serale",
+    "icon": "📖",
+    "color": "#ec4899",
+    "schedule": [
+      {
+        "planned": true,
+        "time": "22:45",
+        "done": true
+      },
+      {
+        "planned": true,
+        "time": "22:45",
+        "done": true
+      },
+      {
+        "planned": true,
+        "time": "22:45",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "22:45",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "22:45",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "23:00",
+        "done": false
+      },
+      {
+        "planned": true,
+        "time": "22:45",
+        "done": false
+      }
+    ]
+  }
+]
