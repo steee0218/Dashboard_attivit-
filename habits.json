@@ -135,7 +135,7 @@
     "color": "#f59e0b",
     "schedule": [
       {
-        "planned": true,
+        "planned": false,
         "time": "18:30",
         "done": true
       },
@@ -145,7 +145,7 @@
         "done": false
       },
       {
-        "planned": true,
+        "planned": false,
         "time": "18:30",
         "done": false
       },
