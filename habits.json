@@ -173,43 +173,43 @@
   },
   {
     "id": "h5",
-    "name": "Lettura Serale",
+    "name": "Lettura",
     "icon": "📖",
     "color": "#ec4899",
     "schedule": [
       {
-        "planned": true,
+        "planned": false,
+        "time": "10:45",
+        "done": true
+      },
+      {
+        "planned": false,
         "time": "22:45",
         "done": true
       },
       {
-        "planned": true,
-        "time": "22:45",
-        "done": true
-      },
-      {
-        "planned": true,
+        "planned": false,
         "time": "22:45",
         "done": false
       },
       {
         "planned": true,
-        "time": "22:45",
+        "time": "15:00",
         "done": false
       },
       {
         "planned": true,
-        "time": "22:45",
+        "time": "15:00",
         "done": false
       },
       {
         "planned": true,
-        "time": "23:00",
+        "time": "15:00",
         "done": false
       },
       {
         "planned": true,
-        "time": "22:45",
+        "time": "15:00",
         "done": false
       }
     ]
