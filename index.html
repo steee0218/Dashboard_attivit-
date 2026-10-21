@@ -495,7 +495,19 @@
                 </div>
 
                 <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-                    <p class="text-xs font-bold uppercase text-cyan-400">Passa dati tra iPhone 13 e iPad Pro</p>
+                    
+                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                    <p class="text-xs font-bold uppercase text-violet-400">Sincronizzazione Cloud Automatica (GitHub)</p>
+                    <p class="text-xs text-slate-400">Incolla qui il tuo Personal Access Token di GitHub per attivare la sync automatica tra iPhone e iPad:</p>
+                    <div class="flex gap-2">
+                        <input type="password" id="ghTokenInput" placeholder="ghp_..." class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white">
+                        <button onclick="saveGitHubToken(document.getElementById('ghTokenInput').value)" class="px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold shrink-0">
+                            Salva
+                        </button>
+                    </div>
+                </div>
+
+<p class="text-xs font-bold uppercase text-cyan-400">Passa dati tra iPhone 13 e iPad Pro</p>
                     <p class="text-xs text-slate-400">Puoi esportare il file JSON o copiare il codice per avere gli stessi orari e spunte su entrambi i dispositivi.</p>
                     <div class="grid grid-cols-2 gap-2 pt-1">
                         <button onclick="exportDataJson()" class="py-2.5 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1.5">
@@ -1341,64 +1353,7 @@
 
         // --- AVVIO ---
         
-        // --- CONFIGURAZIONE GITHUB CLOUD SYNC AUTOMATICO ---
-        const GH_USER = 'steee0218';
-        const GH_REPO = 'Dashboard_attivita';
-        const GH_FILE = 'habits.json';
-        const GH_TOKEN = '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';
-
-        async function syncFromGitHub() {
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`, {
-                    headers: { 'Authorization': `token ${GH_TOKEN}`, 'Accept': 'vnd.github.v3+json' }
-                });
-                if (res && res.ok) {
-                    const data = await res.json();
-                    const contentDecoded = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                    if (Array.isArray(contentDecoded)) {
-                        habits = contentDecoded;
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
-                        renderAll();
-                        console.log('Sincronizzato da GitHub cloud!');
-                    }
-                }
-            } catch (e) {
-                console.error('Sync cloud err:', e);
-            }
-        }
-
-        async function syncToGitHub() {
-            try {
-                let sha = '';
-                const getRes = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`, {
-                    headers: { 'Authorization': `token ${GH_TOKEN}`, 'Accept': 'vnd.github.v3+json' }
-                });
-                if (getRes.ok) {
-                    const fileData = await getRes.json();
-                    sha = fileData.sha;
-                }
-                const jsonString = JSON.stringify(habits, null, 2);
-                const contentEncoded = btoa(unescape(encodeURIComponent(jsonString)));
-
-                await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Authorization': `token ${GH_TOKEN}`,
-                        'Accept': 'vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: 'Auto-sync habitflow state',
-                        content: contentEncoded,
-                        sha: sha ? sha : undefined
-                    })
-                });
-                console.log('Salvato su GitHub cloud!');
-            } catch (e) {
-                console.error('Save cloud err:', e);
-            }
-        }
-
+        
         window.addEventListener('DOMContentLoaded', async () => {
             await syncFromGitHub();
             setupApplePWA();
@@ -1408,3 +1363,4 @@
     </script>
 </body>
 </html>
+    
