@@ -60,21 +60,21 @@
       },
       {
         "planned": true,
-        "time": "14:30",
+        "time": "08:30",
         "done": true
       },
       {
         "planned": true,
-        "time": "14:30",
+        "time": "08:30",
         "done": false
       },
       {
         "planned": true,
-        "time": "14:30",
+        "time": "16:00",
         "done": false
       },
       {
-        "planned": true,
+        "planned": false,
         "time": "15:00",
         "done": false
       },
