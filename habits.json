@@ -87,7 +87,7 @@
   },
   {
     "id": "h3",
-    "name": "Partita / Allenamento Calcetto",
+    "name": "Partita / pulizia stanza",
     "icon": "⚽",
     "color": "#10b981",
     "schedule": [
@@ -107,8 +107,8 @@
         "done": false
       },
       {
-        "planned": false,
-        "time": "21:00",
+        "planned": true,
+        "time": "16:30",
         "done": false
       },
       {
