@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HabitFlow Pro</title>
     
-    <!-- Configurazione PWA / Apple Home Screen (iPhone 13 & iPad Pro) -->
+    <!-- Configurazione PWA / iOS & iPadOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HabitFlow">
     <meta name="theme-color" content="#0b0f19">
     
-    <!-- Icona App generata dinamicamente per la Home di iOS/iPadOS -->
     <link rel="apple-touch-icon" id="apple-icon" href="">
 
-    <!-- Tailwind CSS & Chart.js & Lucide Icons -->
+    <!-- Tailwind CSS, Chart.js, Lucide Icons, Google Identity Services -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -38,7 +38,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #0b0f19;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.14) 0px, transparent 50%),
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
                 radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
             background-attachment: fixed;
@@ -69,7 +69,7 @@
         }
 
         .bottom-nav-glass {
-            background: rgba(15, 23, 42, 0.88);
+            background: rgba(15, 23, 42, 0.90);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -81,6 +81,15 @@
         }
         .check-btn:active {
             transform: scale(0.88);
+        }
+
+        /* Effetto pulsante per attività in corso */
+        @keyframes subtlePulse {
+            0%, 100% { border-color: rgba(6, 182, 212, 0.8); box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
+            50% { border-color: rgba(139, 92, 246, 0.8); box-shadow: 0 0 22px rgba(139, 92, 246, 0.4); }
+        }
+        .active-task-pulse {
+            animation: subtlePulse 3s infinite ease-in-out;
         }
 
         input[type="time"]::-webkit-calendar-picker-indicator {
@@ -110,26 +119,29 @@
                             <span id="cloudStatusBadge" onclick="openBackupModal()" class="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
                                 ☁️ Locale
                             </span>
+                            <span id="calendarStatusBadge" onclick="openBackupModal()" class="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                                📅 Calendario
+                            </span>
                         </div>
                         <p id="currentDateLabel" class="text-xs sm:text-sm text-slate-400 font-medium"></p>
                     </div>
                 </div>
 
-                <!-- Tasto Rapido Cloud su Mobile -->
-                <button onclick="openBackupModal()" class="sm:hidden p-2.5 rounded-xl glass-card text-violet-400 hover:bg-slate-800/60 active:scale-95 transition" title="Sincronizza Cloud">
-                    <i data-lucide="cloud" class="w-5 h-5"></i>
+                <!-- Tasto Rapido Cloud/Impostazioni Mobile -->
+                <button onclick="openBackupModal()" class="sm:hidden p-2.5 rounded-xl glass-card text-violet-400 hover:bg-slate-800/60 active:scale-95 transition" title="Opzioni & Cloud">
+                    <i data-lucide="sliders" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <!-- Azioni Rapide Desktop / iPad -->
+            <!-- Azioni Desktop / iPad -->
             <div class="hidden sm:flex items-center gap-2.5">
-                <button onclick="openInstallModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-cyan-300 hover:bg-slate-800/80 border border-cyan-500/30 flex items-center gap-2 transition">
-                    <i data-lucide="smartphone" class="w-4 h-4"></i>
-                    Metti nella Home
+                <button id="btnReturnToday" onclick="selectToday()" class="hidden px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-emerald-300 hover:bg-slate-800/80 border border-emerald-500/30 flex items-center gap-2 transition">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    Torna a Oggi
                 </button>
                 <button onclick="openBackupModal()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-violet-300 hover:bg-slate-800/80 border border-violet-500/30 flex items-center gap-2 transition">
                     <i data-lucide="cloud" class="w-4 h-4 text-violet-400"></i>
-                    Sincronizza Dati
+                    Sincronizza & Calendario
                 </button>
                 <button onclick="resetWeekConfirm()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-semibold text-amber-300 hover:bg-slate-800/80 flex items-center gap-2 transition">
                     <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
@@ -142,7 +154,7 @@
             </div>
         </header>
 
-        <!-- RIEPILOGO KPI -->
+        <!-- KPI RIEPILOGO -->
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
                 <div>
@@ -194,21 +206,26 @@
             <div class="flex items-center justify-between mb-3 px-1">
                 <div class="flex items-center gap-2">
                     <i data-lucide="calendar-days" class="w-4 h-4 text-violet-400"></i>
-                    <span class="text-xs sm:text-sm font-bold text-slate-200">Seleziona Giorno per vedere la Agenda Oraria</span>
+                    <span class="text-xs sm:text-sm font-bold text-slate-200">Agenda Oraria Giornaliera</span>
                 </div>
-                <button onclick="completeAllDay()" class="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 active:scale-95 transition">
-                    <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
-                    Spunta tutto il giorno
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="btnReturnTodayMobile" onclick="selectToday()" class="sm:hidden hidden text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded-lg border border-cyan-500/30">
+                        Oggi
+                    </button>
+                    <button onclick="completeAllDay()" class="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 active:scale-95 transition">
+                        <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                        Spunta tutto
+                    </button>
+                </div>
             </div>
             <div id="daySelectorBar" class="grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
         </section>
 
-        <!-- SEZIONE 1: AGENDA ORARIA + VISTA SETTIMANALE -->
+        <!-- SEZIONE AGENDA + SETTIMANA -->
         <div id="viewAgenda" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                <!-- Agenda del Giorno -->
+                <!-- AGENDA ORARIA CON FASCE ORARIE & GOOGLE CALENDAR -->
                 <div class="lg:col-span-5 glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
@@ -217,17 +234,19 @@
                                     <i data-lucide="alarm-clock" class="w-5 h-5 text-cyan-400"></i>
                                     <span>Programma di <span id="agendaDayTitle" class="text-cyan-400">Oggi</span></span>
                                 </h2>
-                                <p class="text-xs text-slate-400 mt-0.5">Attività ordinate per orario con casella di spunta</p>
+                                <p class="text-xs text-slate-400 mt-0.5">Abbinamento Abitudini & Eventi Calendario</p>
                             </div>
                             <span id="agendaProgressBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">0/0</span>
                         </div>
 
-                        <div id="dailyAgendaList" class="space-y-3"></div>
+                        <!-- LISTA FASCE ORARIE -->
+                        <div id="dailyAgendaContainer" class="space-y-5"></div>
 
+                        <!-- ATTIVITÀ NON PIANIFICATE OGGI -->
                         <div id="unscheduledSection" class="mt-6 pt-4 border-t border-slate-800/80 hidden">
                             <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center gap-1.5">
                                 <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-                                Altre attività (Fuori programma oggi)
+                                Altre abitudini (Fuori programma oggi)
                             </p>
                             <div id="unscheduledList" class="space-y-2"></div>
                         </div>
@@ -235,11 +254,11 @@
 
                     <button onclick="openHabitModal()" class="mt-5 w-full py-3 rounded-xl border border-dashed border-slate-700 hover:border-violet-500/50 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition active:scale-98">
                         <i data-lucide="plus-circle" class="w-4 h-4 text-violet-400"></i>
-                        Aggiungi o Pianifica Nuova Attività
+                        Aggiungi o Pianifica Nuova Abitudine
                     </button>
                 </div>
 
-                <!-- Tabella Settimanale Completa -->
+                <!-- QUADRO SETTIMANALE -->
                 <div id="matrixContainer" class="lg:col-span-7 glass-card rounded-2xl p-4 sm:p-5 overflow-hidden">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                         <div>
@@ -247,7 +266,7 @@
                                 <i data-lucide="layout-grid" class="w-5 h-5 text-violet-400"></i>
                                 Quadro Settimanale & Orari
                             </h2>
-                            <p class="text-xs text-slate-400 mt-0.5">Tocca una casella per completarla (sotto ognuna vedi l'orario fissato)</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Tocca una casella per completarla (gli eventi calendario non intaccano le serie)</p>
                         </div>
                     </div>
 
@@ -264,7 +283,7 @@
             </div>
         </div>
 
-        <!-- SEZIONE 2: GRAFICI -->
+        <!-- GRAFICI -->
         <section id="viewCharts" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="glass-card rounded-2xl p-4 sm:p-5">
                 <div class="flex items-center justify-between mb-4">
@@ -273,7 +292,7 @@
                             <i data-lucide="activity" class="w-5 h-5 text-cyan-400"></i>
                             Andamento Giornaliero Settimana
                         </h3>
-                        <p class="text-xs text-slate-400">Percentuale di obiettivi pianificati portati a termine</p>
+                        <p class="text-xs text-slate-400">% Abitudini completate (solo abitudini proprie)</p>
                     </div>
                     <div class="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800">
                         <button id="btnChartLine" onclick="switchChartType('line')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-600 text-white transition">Linea</button>
@@ -292,7 +311,7 @@
                             <i data-lucide="bar-chart-horizontal" class="w-5 h-5 text-emerald-400"></i>
                             Obiettivi Completati vs Pianificati
                         </h3>
-                        <p class="text-xs text-slate-400">Confronto settimanale per ciascuna attività</p>
+                        <p class="text-xs text-slate-400">Confronto settimanale abitudini</p>
                     </div>
                 </div>
                 <div class="h-64 sm:h-72 relative">
@@ -303,7 +322,7 @@
 
     </div>
 
-    <!-- BARRA DI NAVIGAZIONE INFERIORE PER IPHONE -->
+    <!-- BARRA NAVIGAZIONE MOBILE -->
     <nav class="sm:hidden fixed bottom-0 left-0 right-0 bottom-nav-glass z-40 px-4 pt-2 pb-3 flex items-center justify-around">
         <button onclick="mobileNav('agenda')" id="navBtnAgenda" class="flex flex-col items-center gap-1 text-violet-400 font-semibold text-[11px]">
             <i data-lucide="alarm-clock" class="w-5 h-5"></i>
@@ -321,16 +340,16 @@
             <span>Grafici</span>
         </button>
         <button onclick="openBackupModal()" id="navBtnSync" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px]">
-            <i data-lucide="cloud" class="w-5 h-5"></i>
-            <span>Cloud & Opzioni</span>
+            <i data-lucide="sliders" class="w-5 h-5"></i>
+            <span>Opzioni</span>
         </button>
     </nav>
 
-    <!-- MODALE: CREA / MODIFICA ATTIVITÀ -->
+    <!-- MODALE: CREA / MODIFICA ABITUDINE -->
     <div id="habitModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
         <div class="glass-card rounded-3xl max-w-lg w-full p-5 sm:p-6 border border-slate-700/80 my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                <h3 id="modalTitle" class="text-lg font-bold text-white">Pianifica Attività & Orari</h3>
+                <h3 id="modalTitle" class="text-lg font-bold text-white">Pianifica Abitudine & Orari</h3>
                 <button onclick="closeHabitModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
@@ -340,7 +359,7 @@
                 <input type="hidden" id="habitId">
 
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Nome Attività / Obiettivo</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Nome Abitudine</label>
                     <input type="text" id="habitName" required placeholder="Es. Allenamento Memoria PAO, Calcetto, Studio..." 
                         class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-violet-500 select-text">
                 </div>
@@ -401,126 +420,115 @@
                         Annulla
                     </button>
                     <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-xs font-bold shadow-lg shadow-violet-600/30">
-                        Salva Attività
+                        Salva Abitudine
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODALE: GUIDA INSTALLAZIONE HOME -->
-    <div id="installModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
-                        <i data-lucide="smartphone" class="w-5 h-5"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-white">Metti nella Home (iPhone & iPad)</h3>
-                </div>
-                <button onclick="closeInstallModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <div class="space-y-3.5 text-xs sm:text-sm text-slate-300">
-                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-                    <div class="flex items-start gap-2.5">
-                        <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
-                        <p>Apri il link ufficiale della tua GitHub Page dentro <strong>Safari</strong>.</p>
-                    </div>
-                    <div class="flex items-start gap-2.5">
-                        <span class="w-5 h-5 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
-                        <p>Tocca il tasto <strong>Condividi</strong> (quadrato con freccia in alto) e seleziona <strong>"Aggiungi alla schermata Home"</strong>.</p>
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="closeInstallModal()" class="mt-5 w-full py-2.5 rounded-xl bg-violet-600 text-white text-xs font-bold">
-                Ho capito!
-            </button>
-        </div>
-    </div>
-
-    <!-- MODALE: SINCRONIZZAZIONE CLOUD GITHUB & OPZIONI -->
+    <!-- MODALE: IMPOSTAZIONI, GITHUB & GOOGLE CALENDAR -->
     <div id="backupModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-        <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700 my-8">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div class="glass-card rounded-3xl max-w-md w-full p-5 sm:p-6 border border-slate-700 my-8 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i data-lucide="cloud" class="w-5 h-5 text-violet-400"></i>
-                    Sincronizzazione Cloud & Opzioni
+                    <i data-lucide="sliders" class="w-5 h-5 text-violet-400"></i>
+                    Configurazione Cloud & Calendario
                 </h3>
                 <button onclick="closeBackupModal()" class="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <div class="space-y-4">
-                <!-- BOX CONFIGURAZIONE GITHUB CLOUD -->
-                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-violet-500/30 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase text-violet-400">Sincronizzazione Automatica GitHub</p>
-                        <span id="modalCloudStatus" class="text-[11px] font-semibold text-slate-400">Non collegato</span>
-                    </div>
-                    <p class="text-xs text-slate-400">Inserisci il tuo Personal Access Token (con permesso <code>repo</code>) su iPhone e su iPad. Rimarrà salvato solo nella memoria privata del dispositivo.</p>
-                    
-                    <div class="space-y-2">
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Repository GitHub rilevato</label>
-                            <input type="text" id="ghRepoInput" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 select-text">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Token GitHub (ghp_...)</label>
-                            <input type="password" id="ghTokenInput" placeholder="Incolla qui ghp_..." class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white select-text">
-                        </div>
-                        <div class="flex gap-2 pt-1">
-                            <button type="button" onclick="saveGitHubConfig()" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-xs font-bold shadow-lg shadow-violet-600/25 active:scale-95 transition">
-                                Salva e Sincronizza Ora
-                            </button>
-                            <button type="button" onclick="forcePullFromCloud()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold" title="Scarica dati dal Cloud">
-                                Scarica
-                            </button>
-                        </div>
-                    </div>
+            <!-- INTEGRAZIONE GOOGLE CALENDAR -->
+            <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 space-y-3">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-bold uppercase text-cyan-400 flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        Google Calendar
+                    </p>
+                    <span id="modalCalStatus" class="text-[11px] font-semibold text-slate-400">Non collegato</span>
                 </div>
-
-                <!-- AZIONI SETTIMANALI -->
-                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-                    <p class="text-xs font-bold uppercase text-amber-400">Azioni Settimanali</p>
-                    <button onclick="resetWeekConfirm()" class="w-full py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-2 transition">
-                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                        Inizia Nuova Settimana (Azzera spunte, tieni orari)
-                    </button>
-                </div>
-
-                <!-- BACKUP MANUALE FILE -->
-                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-                    <p class="text-xs font-bold uppercase text-cyan-400">Backup Manuale su File</p>
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <button onclick="exportDataJson()" class="py-2.5 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1.5">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            Esporta JSON
+                <p class="text-xs text-slate-400">Collega Google Calendar per importare in automatico gli eventi della giornata (solo nome e ora). Se tocci l'attività, si aprirà l'app di Calendar!</p>
+                
+                <div class="space-y-2">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Google OAuth Client ID</label>
+                        <input type="text" id="gcalClientIdInput" placeholder="Incolla il Client ID Google Cloud..." class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white select-text">
+                    </div>
+                    <div class="flex gap-2 pt-1">
+                        <button type="button" onclick="saveGoogleConfigAndLogin()" class="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-bold shadow-lg shadow-cyan-600/25 active:scale-95 transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="log-in" class="w-4 h-4"></i>
+                            Accedi con Google
                         </button>
-                        <label class="py-2.5 px-3 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-500/30 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
-                            <i data-lucide="upload" class="w-4 h-4"></i>
-                            Importa JSON
-                            <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden">
-                        </label>
+                        <button type="button" onclick="fetchGoogleCalendarEvents(true)" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold" title="Aggiorna Eventi">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <button onclick="closeBackupModal()" class="mt-5 w-full py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">
+            <!-- GITHUB CLOUD SYNC -->
+            <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-violet-500/30 space-y-3">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-bold uppercase text-violet-400 flex items-center gap-1.5">
+                        <i data-lucide="cloud" class="w-4 h-4"></i>
+                        GitHub Cloud Sync
+                    </p>
+                    <span id="modalCloudStatus" class="text-[11px] font-semibold text-slate-400">Non collegato</span>
+                </div>
+                <div class="space-y-2">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Repository</label>
+                        <input type="text" id="ghRepoInput" class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 select-text">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Token (ghp_...)</label>
+                        <input type="password" id="ghTokenInput" placeholder="Incolla qui ghp_..." class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white select-text">
+                    </div>
+                    <div class="flex gap-2 pt-1">
+                        <button type="button" onclick="saveGitHubConfig()" class="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold shadow-lg shadow-violet-600/25 active:scale-95 transition">
+                            Salva GitHub
+                        </button>
+                        <button type="button" onclick="forcePullFromCloud()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold">
+                            Scarica
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AZIONI SETTIMANA & FILE -->
+            <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                <p class="text-xs font-bold uppercase text-amber-400">Azioni Settimana & Backup</p>
+                <button onclick="resetWeekConfirm()" class="w-full py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-2 transition">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    Azzera Spunte Settimana
+                </button>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="exportDataJson()" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium flex items-center justify-center gap-1.5">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        Esporta JSON
+                    </button>
+                    <label class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                        Importa JSON
+                        <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <button onclick="closeBackupModal()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">
                 Chiudi
             </button>
         </div>
     </div>
 
     <script>
-        // --- COSTANTI E STATO ---
+        // --- STATO & COSTANTI ---
         const DAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
         const DAYS_FULL = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
         const STORAGE_KEY = 'habitflow_pro_v2_state';
+        const GCAL_EVENTS_KEY = 'habitflow_gcal_events';
         const GH_USER = 'steee0218';
         const GH_FILE = 'habits.json';
 
@@ -530,6 +538,9 @@
         let currentChartType = 'line';
         let trendChartInstance = null;
         let comparisonChartInstance = null;
+
+        let habits = [];
+        let calendarEvents = []; // Eventi minimali scaricati da Google Calendar: { id, title, time, isAllDay, htmlLink, dayIdx }
 
         const DEFAULT_HABITS = [
             {
@@ -609,9 +620,28 @@
             }
         ];
 
-        let habits = [];
+        // --- GESTIONE ORE & FASCE ---
+        function getTimeSlot(timeStr) {
+            if (!timeStr || timeStr === 'Tutto il giorno') return 'mattina';
+            const hour = parseInt(timeStr.split(':')[0], 10);
+            if (hour < 13) return 'mattina';
+            if (hour < 18) return 'pomeriggio';
+            return 'sera';
+        }
 
-        // --- RILEVAMENTO INTELLIGENTE REPOSITORY E TOKEN GITHUB ---
+        function isCurrentActive(timeStr) {
+            if (selectedDayIdx !== todayIdx || !timeStr || timeStr === 'Tutto il giorno') return false;
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+            const [h, m] = timeStr.split(':').map(Number);
+            const taskTotal = h * 60 + m;
+            const nowTotal = currentHour * 60 + currentMin;
+            // Attività considerata "in corso" da 15 minuti prima a 45 minuti dopo l'orario fissato
+            return nowTotal >= (taskTotal - 15) && nowTotal <= (taskTotal + 45);
+        }
+
+        // --- GITHUB CLOUD SYNC ---
         function detectRepoName() {
             const savedRepo = localStorage.getItem('habitflow_gh_repo');
             if (savedRepo) return savedRepo;
@@ -655,7 +685,7 @@
             const repoInput = document.getElementById('ghRepoInput').value.trim() || 'Dashboard_attivita';
 
             if (!tokenInput) {
-                alert('Incolla il tuo nuovo Token di GitHub (inizia con ghp_...) prima di premere Salva.');
+                alert('Incolla il tuo Token di GitHub (ghp_...) prima di premere Salva.');
                 return;
             }
 
@@ -663,7 +693,6 @@
             localStorage.setItem('habitflow_gh_repo', repoInput);
 
             updateCloudBadge('syncing', 'Verifica connessione...');
-            
             const pulled = await syncFromGitHub(true);
             if (!pulled) {
                 await syncToGitHub();
@@ -699,8 +728,8 @@
                 }
 
                 if (!res.ok) {
-                    updateCloudBadge('error', `Errore GitHub (${res.status}): controlla Token/Repo`);
-                    if (isManual) alert(`Errore di connessione a GitHub (${res.status}). Verifica che il Token sia valido e non revocato e che il nome del repository (${repo}) sia esatto.`);
+                    updateCloudBadge('error', `Errore GitHub (${res.status})`);
+                    if (isManual) alert(`Errore GitHub (${res.status}). Verifica Token e nome repo (${repo}).`);
                     return false;
                 }
 
@@ -774,12 +803,137 @@
                     updateCloudBadge('error', `Errore salvataggio (${putRes.status})`);
                 }
             } catch (e) {
-                console.error('Errore salvataggio su GitHub:', e);
+                console.error('Errore salvataggio:', e);
                 updateCloudBadge('error', 'Errore rete');
             }
         }
 
-        // --- ICONA APPLE TOUCH ---
+        // --- INTEGRAZIONE GOOGLE CALENDAR ---
+        let tokenClient;
+
+        function updateCalendarBadge(state, message) {
+            const badge = document.getElementById('calendarStatusBadge');
+            const modalStatus = document.getElementById('modalCalStatus');
+            if (!badge) return;
+
+            if (state === 'ok') {
+                badge.textContent = '📅 G-Cal Attivo';
+                badge.className = 'cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+                if (modalStatus) { modalStatus.textContent = message || 'Collegato ✅'; modalStatus.className = 'text-[11px] font-semibold text-cyan-400'; }
+            } else if (state === 'syncing') {
+                badge.textContent = '📅 G-Cal Sync...';
+                badge.className = 'cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                if (modalStatus) { modalStatus.textContent = 'Caricamento eventi...'; modalStatus.className = 'text-[11px] font-semibold text-amber-400'; }
+            } else {
+                badge.textContent = '📅 Calendario';
+                badge.className = 'cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700';
+                if (modalStatus) { modalStatus.textContent = 'Non collegato'; modalStatus.className = 'text-[11px] font-semibold text-slate-400'; }
+            }
+        }
+
+        function saveGoogleConfigAndLogin() {
+            const clientId = document.getElementById('gcalClientIdInput').value.trim();
+            if (!clientId) {
+                alert('Inserisci prima il tuo Client ID di Google Cloud.');
+                return;
+            }
+            localStorage.setItem('habitflow_gcal_client_id', clientId);
+            initGoogleAuthAndLogin();
+        }
+
+        function initGoogleAuthAndLogin() {
+            const clientId = localStorage.getItem('habitflow_gcal_client_id');
+            if (!clientId || !window.google) return;
+
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: clientId,
+                scope: 'https://www.googleapis.com/auth/calendar.events.readonly',
+                callback: async (resp) => {
+                    if (resp.error) {
+                        console.error('Google Auth Error:', resp);
+                        updateCalendarBadge('error');
+                        return;
+                    }
+                    localStorage.setItem('habitflow_gcal_access_token', resp.access_token);
+                    updateCalendarBadge('ok', 'Autorizzato!');
+                    await fetchGoogleCalendarEvents();
+                }
+            });
+
+            tokenClient.requestAccessToken({ prompt: '' });
+        }
+
+        async function fetchGoogleCalendarEvents(isManual = false) {
+            const accessToken = localStorage.getItem('habitflow_gcal_access_token');
+            if (!accessToken) {
+                if (isManual) initGoogleAuthAndLogin();
+                return;
+            }
+
+            updateCalendarBadge('syncing');
+
+            // Calcola data inizio settimana (Lunedì) e fine settimana (Domenica)
+            const now = new Date();
+            const currDay = now.getDay();
+            const distToMonday = (currDay === 0 ? -6 : 1) - currDay;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + distToMonday);
+            monday.setHours(0, 0, 0, 0);
+
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 7);
+
+            try {
+                const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${monday.toISOString()}&timeMax=${sunday.toISOString()}&singleEvents=true&orderBy=startTime`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                if (res.status === 401) {
+                    // Token scaduto, rinnoviamo
+                    localStorage.removeItem('habitflow_gcal_access_token');
+                    if (isManual) initGoogleAuthAndLogin();
+                    updateCalendarBadge('none');
+                    return;
+                }
+
+                if (!res.ok) throw new Error('Errore risposta Google');
+
+                const data = await res.json();
+                calendarEvents = (data.items || []).map(item => {
+                    const isAllDay = !item.start.dateTime;
+                    const eventDate = new Date(item.start.dateTime || item.start.date);
+                    const day = eventDate.getDay();
+                    const dayIdx = day === 0 ? 6 : day - 1;
+                    const time = isAllDay ? 'Tutto il giorno' : eventDate.toTimeString().slice(0, 5);
+
+                    return {
+                        id: item.id,
+                        title: item.summary || 'Impegno senza titolo',
+                        time: time,
+                        isAllDay: isAllDay,
+                        htmlLink: item.htmlLink || 'googlecalendar://',
+                        dayIdx: dayIdx
+                    };
+                });
+
+                localStorage.setItem(GCAL_EVENTS_KEY, JSON.stringify(calendarEvents));
+                updateCalendarBadge('ok');
+                renderAll();
+                if (isManual) alert('Eventi del calendario sincronizzati con successo!');
+            } catch (err) {
+                console.error('Errore scaricamento calendario:', err);
+                updateCalendarBadge('error');
+            }
+        }
+
+        function openGoogleCalendarApp(link) {
+            // Tenta di aprire l'app nativa di Google Calendar, altrimenti ricade sul link web
+            const directUrl = link || 'https://calendar.google.com/';
+            window.open(directUrl, '_blank');
+        }
+
+        // --- APPLE TOUCH ICON ---
         function setupApplePWA() {
             try {
                 const canvas = document.createElement('canvas');
@@ -808,20 +962,25 @@
             } catch (e) {}
         }
 
-        // --- CARICAMENTO & SALVATAGGIO STATO ---
+        // --- CARICAMENTO STATO ---
         function loadState() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (raw) {
                     const parsed = JSON.parse(raw);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        habits = parsed;
-                        return;
-                    }
+                    if (Array.isArray(parsed) && parsed.length > 0) habits = parsed;
                 }
             } catch (e) {}
-            habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+
+            if (habits.length === 0) {
+                habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+            }
+
+            try {
+                const rawCal = localStorage.getItem(GCAL_EVENTS_KEY);
+                if (rawCal) calendarEvents = JSON.parse(rawCal);
+            } catch (e) {}
         }
 
         function saveState() {
@@ -833,9 +992,8 @@
             let streak = 0;
             for (let d = todayIdx; d >= 0; d--) {
                 const slot = habit.schedule[d];
-                if (slot.done) {
-                    streak++;
-                } else if (slot.planned) {
+                if (slot.done) streak++;
+                else if (slot.planned) {
                     if (d === todayIdx) continue;
                     break;
                 }
@@ -843,11 +1001,28 @@
             return streak;
         }
 
-        // --- RENDER INTERFACCIA ---
+        function selectToday() {
+            selectedDayIdx = todayIdx;
+            renderAll();
+        }
+
+        // --- RENDER COMPLETO ---
         function renderAll() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
             document.getElementById('currentDateLabel').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+            // Pulsante "Torna a Oggi"
+            const isToday = selectedDayIdx === todayIdx;
+            const btnToday = document.getElementById('btnReturnToday');
+            const btnTodayM = document.getElementById('btnReturnTodayMobile');
+            if (isToday) {
+                btnToday.classList.add('hidden');
+                btnTodayM.classList.add('hidden');
+            } else {
+                btnToday.classList.remove('hidden');
+                btnTodayM.classList.remove('hidden');
+            }
 
             renderKPIs();
             renderDaySelector();
@@ -906,7 +1081,7 @@
 
             const weekRate = totalPlannedWeek > 0 ? Math.round((totalDoneWeek / totalPlannedWeek) * 100) : 0;
             document.getElementById('kpiWeekRate').textContent = `${weekRate}%`;
-            document.getElementById('kpiWeekTotal').textContent = `${totalDoneWeek} su ${totalPlannedWeek} obiettivi`;
+            document.getElementById('kpiWeekTotal').textContent = `${totalDoneWeek} su ${totalPlannedWeek} abitudini`;
         }
 
         function renderDaySelector() {
@@ -922,7 +1097,7 @@
                 });
 
                 const isSelected = idx === selectedDayIdx;
-                const isToday = idx === todayIdx;
+                const isDayToday = idx === todayIdx;
 
                 const btn = document.createElement('button');
                 btn.onclick = () => { selectedDayIdx = idx; renderAll(); };
@@ -935,7 +1110,7 @@
                 btn.innerHTML = `
                     <div class="flex items-center gap-1">
                         <span class="text-xs sm:text-sm font-bold">${dayName}</span>
-                        ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>' : ''}
+                        ${isDayToday ? '<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>' : ''}
                     </div>
                     <span class="text-[10px] sm:text-xs mt-1 px-1.5 py-0.5 rounded-md ${
                         isSelected ? 'bg-black/30 text-cyan-200 font-bold' : 'bg-slate-800 text-slate-400'
@@ -949,108 +1124,208 @@
             document.getElementById('agendaDayTitle').textContent = 
                 selectedDayIdx === todayIdx ? `Oggi (${DAYS_FULL[selectedDayIdx]})` : DAYS_FULL[selectedDayIdx];
 
-            const listEl = document.getElementById('dailyAgendaList');
+            const container = document.getElementById('dailyAgendaContainer');
             const unscheduledSection = document.getElementById('unscheduledSection');
             const unscheduledList = document.getElementById('unscheduledList');
-            listEl.innerHTML = '';
+            container.innerHTML = '';
             unscheduledList.innerHTML = '';
 
-            const scheduledItems = [];
-            const extraItems = [];
+            // Uniamo le abitudini pianificate e gli eventi Google Calendar del giorno selezionato
+            const allItems = [];
 
             habits.forEach(h => {
                 const slot = h.schedule[selectedDayIdx];
-                if (slot.planned) scheduledItems.push({ habit: h, slot });
-                else extraItems.push({ habit: h, slot });
-            });
-
-            scheduledItems.sort((a, b) => a.slot.time.localeCompare(b.slot.time));
-
-            const doneCount = scheduledItems.filter(i => i.slot.done).length;
-            document.getElementById('agendaProgressBadge').textContent = `${doneCount}/${scheduledItems.length} completate`;
-
-            if (scheduledItems.length === 0) {
-                listEl.innerHTML = `
-                    <div class="p-6 rounded-2xl bg-slate-900/50 border border-slate-800/80 text-center space-y-2">
-                        <p class="text-sm font-semibold text-slate-300">Nessuna attività pianificata per ${DAYS_FULL[selectedDayIdx]}</p>
-                        <p class="text-xs text-slate-400">Puoi goderti il riposo o aggiungere un obiettivo con orario.</p>
-                    </div>
-                `;
-            } else {
-                scheduledItems.forEach(({ habit, slot }) => {
-                    const card = document.createElement('div');
-                    card.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
-                        slot.done 
-                            ? 'bg-emerald-950/25 border-emerald-500/30' 
-                            : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
-                    }`;
-
-                    card.innerHTML = `
-                        <div class="flex items-center gap-3 min-w-0">
-                            <button onclick="toggleHabitCheck('${habit.id}', ${selectedDayIdx})" 
-                                class="check-btn w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border-2 transition ${
-                                    slot.done 
-                                        ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/30' 
-                                        : 'bg-slate-800/90 border-slate-600 text-transparent hover:border-violet-400'
-                                }">
-                                <i data-lucide="check" class="w-6 h-6 stroke-[3]"></i>
-                            </button>
-
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-2">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-extrabold" 
-                                        style="background-color: ${habit.color}22; color: ${habit.color}; border: 1px solid ${habit.color}44;">
-                                        ⏰ ${slot.time}
-                                    </span>
-                                    <span class="text-xs text-amber-400 font-bold">🔥 ${calculateStreak(habit)}</span>
-                                </div>
-                                <p class="text-sm sm:text-base font-bold mt-1 truncate ${slot.done ? 'line-through text-slate-400' : 'text-white'}">
-                                    ${habit.icon} ${habit.name}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-1 shrink-0">
-                            <button onclick="openHabitModal('${habit.id}')" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">
-                                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    `;
-                    listEl.appendChild(card);
-                });
-            }
-
-            if (extraItems.length > 0) {
-                unscheduledSection.classList.remove('hidden');
-                extraItems.forEach(({ habit, slot }) => {
+                if (slot.planned) {
+                    allItems.push({
+                        type: 'habit',
+                        id: h.id,
+                        title: h.name,
+                        icon: h.icon,
+                        color: h.color,
+                        time: slot.time,
+                        done: slot.done,
+                        isAllDay: false,
+                        habitObj: h
+                    });
+                } else {
+                    // fuori programma
                     const row = document.createElement('div');
                     row.className = "p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/60 flex items-center justify-between";
                     row.innerHTML = `
                         <div class="flex items-center gap-2.5">
-                            <button onclick="toggleHabitCheck('${habit.id}', ${selectedDayIdx})" 
+                            <button onclick="toggleHabitCheck('${h.id}', ${selectedDayIdx})" 
                                 class="check-btn w-8 h-8 rounded-xl flex items-center justify-center border ${
-                                    slot.done 
-                                        ? 'bg-emerald-500 border-emerald-400 text-slate-950' 
-                                        : 'bg-slate-800 border-slate-700 text-transparent'
+                                    slot.done ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'bg-slate-800 border-slate-700 text-transparent'
                                 }">
                                 <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
                             </button>
-                            <span class="text-xs font-medium ${slot.done ? 'line-through text-slate-400' : 'text-slate-300'}">${habit.icon} ${habit.name}</span>
+                            <span class="text-xs font-medium ${slot.done ? 'line-through text-slate-400' : 'text-slate-300'}">${h.icon} ${h.name}</span>
                         </div>
-                        <button onclick="openHabitModal('${habit.id}')" class="text-[11px] font-semibold text-violet-400 hover:underline px-2 py-1">
+                        <button onclick="openHabitModal('${h.id}')" class="text-[11px] font-semibold text-violet-400 hover:underline px-2 py-1">
                             + Pianifica oggi
                         </button>
                     `;
                     unscheduledList.appendChild(row);
+                }
+            });
+
+            // Aggiungiamo gli eventi del calendario per il giorno selezionato
+            const gcalDayEvents = calendarEvents.filter(ev => ev.dayIdx === selectedDayIdx);
+            gcalDayEvents.forEach(ev => {
+                allItems.push({
+                    type: 'calendar',
+                    id: ev.id,
+                    title: ev.title,
+                    icon: '📅',
+                    color: '#38bdf8', // azzurro cielo
+                    time: ev.time,
+                    done: false,
+                    isAllDay: ev.isAllDay,
+                    htmlLink: ev.htmlLink
                 });
-            } else {
-                unscheduledSection.classList.add('hidden');
+            });
+
+            // Badge completamento (calcolato solo sulle abitudini)
+            const scheduledHabits = allItems.filter(i => i.type === 'habit');
+            const doneHabitsCount = scheduledHabits.filter(i => i.done).length;
+            document.getElementById('agendaProgressBadge').textContent = `${doneHabitsCount}/${scheduledHabits.length} completate`;
+
+            if (allItems.length === 0) {
+                container.innerHTML = `
+                    <div class="p-6 rounded-2xl bg-slate-900/50 border border-slate-800/80 text-center space-y-2">
+                        <p class="text-sm font-semibold text-slate-300">Nessuna attività pianificata per ${DAYS_FULL[selectedDayIdx]}</p>
+                        <p class="text-xs text-slate-400">Giornata libera! Nessuna abitudine o evento del calendario.</p>
+                    </div>
+                `;
+                return;
             }
+
+            // Mostra o nascondi sezione fuori programma
+            unscheduledSection.classList.toggle('hidden', unscheduledList.children.length === 0);
+
+            // Raggruppamento per Fasce Orarie: Mattina, Pomeriggio, Sera
+            const sections = [
+                { id: 'mattina', title: 'Mattina', icon: 'sunrise', color: 'text-amber-400', items: [] },
+                { id: 'pomeriggio', title: 'Pomeriggio', icon: 'sun', color: 'text-cyan-400', items: [] },
+                { id: 'sera', title: 'Sera', icon: 'moon', color: 'text-indigo-400', items: [] }
+            ];
+
+            allItems.forEach(item => {
+                const slot = getTimeSlot(item.time);
+                const section = sections.find(s => s.id === slot);
+                if (section) section.items.push(item);
+            });
+
+            sections.forEach(sec => {
+                if (sec.items.length === 0) return;
+
+                sec.items.sort((a, b) => {
+                    if (a.isAllDay) return -1;
+                    if (b.isAllDay) return 1;
+                    return a.time.localeCompare(b.time);
+                });
+
+                const groupEl = document.createElement('div');
+                groupEl.className = "space-y-2.5";
+
+                groupEl.innerHTML = `
+                    <div class="flex items-center gap-2 px-1 pt-1">
+                        <i data-lucide="${sec.icon}" class="w-4 h-4 ${sec.color}"></i>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">${sec.title}</span>
+                    </div>
+                `;
+
+                const cardsContainer = document.createElement('div');
+                cardsContainer.className = "space-y-2.5";
+
+                sec.items.forEach(item => {
+                    const isActive = isCurrentActive(item.time);
+                    const card = document.createElement('div');
+
+                    if (item.type === 'habit') {
+                        // CARD ABITUDINE
+                        card.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
+                            isActive ? 'active-task-pulse bg-slate-900/90' : (
+                                item.done 
+                                    ? 'bg-emerald-950/20 border-emerald-500/30' 
+                                    : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                            )
+                        }`;
+
+                        card.innerHTML = `
+                            <div class="flex items-center gap-3 min-w-0">
+                                <button onclick="toggleHabitCheck('${item.id}', ${selectedDayIdx})" 
+                                    class="check-btn w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border-2 transition ${
+                                        item.done 
+                                            ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/30' 
+                                            : 'bg-slate-800/90 border-slate-600 text-transparent hover:border-violet-400'
+                                    }">
+                                    <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
+                                </button>
+
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-extrabold" 
+                                            style="background-color: ${item.color}22; color: ${item.color}; border: 1px solid ${item.color}44;">
+                                            ⏰ ${item.time}
+                                        </span>
+                                        ${isActive ? '<span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">In corso</span>' : ''}
+                                        <span class="text-xs text-amber-400 font-bold">🔥 ${calculateStreak(item.habitObj)}</span>
+                                    </div>
+                                    <p class="text-sm sm:text-base font-bold mt-1 truncate ${item.done ? 'line-through text-slate-400' : 'text-white'}">
+                                        ${item.icon} ${item.title}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button onclick="openHabitModal('${item.id}')" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        // CARD GOOGLE CALENDAR (MINIMAL, SENZA SPUNTA, TAP APRE L'APP CALENDARIO)
+                        card.onclick = () => openGoogleCalendarApp(item.htmlLink);
+                        card.className = `p-3.5 rounded-2xl border-2 border-dashed border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/40 cursor-pointer transition flex items-center justify-between gap-3 ${
+                            isActive ? 'active-task-pulse' : ''
+                        }`;
+
+                        card.innerHTML = `
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0 text-cyan-400">
+                                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                                            📅 ${item.time}
+                                        </span>
+                                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Google Calendar</span>
+                                        ${isActive ? '<span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">In corso</span>' : ''}
+                                    </div>
+                                    <p class="text-sm sm:text-base font-bold text-white mt-1 truncate">
+                                        ${item.title}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0 text-cyan-400 pr-1">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </div>
+                        `;
+                    }
+
+                    cardsContainer.appendChild(card);
+                });
+
+                groupEl.appendChild(cardsContainer);
+                container.appendChild(groupEl);
+            });
         }
 
         function renderWeeklyMatrix() {
             const thead = document.getElementById('matrixHeaderRow');
-            thead.innerHTML = `<th class="py-2.5 pr-3">Attività</th>`;
+            thead.innerHTML = `<th class="py-2.5 pr-3">Abitudini</th>`;
             DAYS_SHORT.forEach((d, idx) => {
                 const isSel = idx === selectedDayIdx;
                 thead.innerHTML += `
@@ -1149,7 +1424,7 @@
                 data: {
                     labels: DAYS_SHORT,
                     datasets: [{
-                        label: '% Obiettivi Completati',
+                        label: '% Abitudini Completate',
                         data: dailyRates,
                         borderColor: '#8b5cf6',
                         backgroundColor: currentChartType === 'line' ? grad : 'rgba(139, 92, 246, 0.7)',
@@ -1185,8 +1460,8 @@
                 data: {
                     labels,
                     datasets: [
-                        { label: 'Completati', data: doneData, backgroundColor: '#10b981', borderRadius: 6 },
-                        { label: 'Pianificati', data: plannedData, backgroundColor: 'rgba(148, 163, 184, 0.25)', borderRadius: 6 }
+                        { label: 'Completate', data: doneData, backgroundColor: '#10b981', borderRadius: 6 },
+                        { label: 'Pianificate', data: plannedData, backgroundColor: 'rgba(148, 163, 184, 0.25)', borderRadius: 6 }
                     ]
                 },
                 options: {
@@ -1224,30 +1499,28 @@
 
         function completeAllDay() {
             habits.forEach(h => {
-                if (h.schedule[selectedDayIdx].planned) {
-                    h.schedule[selectedDayIdx].done = true;
-                }
+                if (h.schedule[selectedDayIdx].planned) h.schedule[selectedDayIdx].done = true;
             });
             saveState();
             renderAll();
         }
 
         function deleteHabit(habitId) {
-            if (!confirm('Vuoi eliminare questa attività?')) return;
+            if (!confirm('Vuoi eliminare questa abitudine?')) return;
             habits = habits.filter(h => h.id !== habitId);
             saveState();
             renderAll();
         }
 
         function resetWeekConfirm() {
-            if (!confirm('Vuoi iniziare una nuova settimana? Tutte le caselle spuntate verranno azzerate, ma i tuoi orari rimarranno salvati.')) return;
+            if (!confirm('Vuoi iniziare una nuova settimana? Le spunte verranno azzerate, ma gli orari rimarranno invariati.')) return;
             habits.forEach(h => h.schedule.forEach(s => { s.done = false; }));
             saveState();
             closeBackupModal();
             renderAll();
         }
 
-        // --- FORM CREAZIONE / MODIFICA ---
+        // --- MODALE MODIFICA ---
         function buildScheduleFormRows(scheduleData) {
             const container = document.getElementById('scheduleDaysFormList');
             container.innerHTML = '';
@@ -1303,14 +1576,14 @@
             const habit = habits.find(h => h.id === habitId);
 
             if (habit) {
-                document.getElementById('modalTitle').textContent = 'Modifica Attività & Orari';
+                document.getElementById('modalTitle').textContent = 'Modifica Abitudine & Orari';
                 document.getElementById('habitId').value = habit.id;
                 document.getElementById('habitName').value = habit.name;
                 document.getElementById('habitIcon').value = habit.icon;
                 document.getElementById('habitColor').value = habit.color;
                 buildScheduleFormRows(habit.schedule);
             } else {
-                document.getElementById('modalTitle').textContent = 'Nuova Attività con Giorni e Orari';
+                document.getElementById('modalTitle').textContent = 'Nuova Abitudine con Giorni e Orari';
                 document.getElementById('habitId').value = '';
                 document.getElementById('habitName').value = '';
                 document.getElementById('habitIcon').value = '🎯';
@@ -1367,24 +1640,15 @@
             renderAll();
         }
 
-        // --- MODALI SECONDARI ---
-        function openInstallModal() {
-            const m = document.getElementById('installModal');
-            m.classList.remove('hidden');
-            m.classList.add('flex');
-        }
-        function closeInstallModal() {
-            const m = document.getElementById('installModal');
-            m.classList.add('hidden');
-            m.classList.remove('flex');
-        }
         function openBackupModal() {
             document.getElementById('ghRepoInput').value = detectRepoName();
             document.getElementById('ghTokenInput').value = getGitHubToken();
+            document.getElementById('gcalClientIdInput').value = localStorage.getItem('habitflow_gcal_client_id') || '';
             const m = document.getElementById('backupModal');
             m.classList.remove('hidden');
             m.classList.add('flex');
         }
+
         function closeBackupModal() {
             const m = document.getElementById('backupModal');
             m.classList.add('hidden');
@@ -1411,10 +1675,10 @@
                         saveState();
                         closeBackupModal();
                         renderAll();
-                        alert('Backup importato con successo!');
+                        alert('Backup importato!');
                     }
                 } catch (err) {
-                    alert('File JSON non valido.');
+                    alert('File non valido.');
                 }
             };
             reader.readAsText(file);
@@ -1440,12 +1704,13 @@
             }
         }
 
-        // --- AVVIO SICURO ---
+        // --- AVVIO APP ---
         window.addEventListener('DOMContentLoaded', async () => {
             setupApplePWA();
             loadState();
             renderAll();
             await syncFromGitHub();
+            await fetchGoogleCalendarEvents();
         });
     </script>
 </body>
