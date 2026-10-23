@@ -28,7 +28,7 @@
       {
         "planned": true,
         "time": "10:00",
-        "done": false
+        "done": true
       },
       {
         "planned": false,
