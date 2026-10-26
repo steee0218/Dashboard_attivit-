@@ -94,7 +94,7 @@
       {
         "planned": true,
         "time": "21:00",
-        "done": true
+        "done": false
       },
       {
         "planned": false,
@@ -137,7 +137,7 @@
       {
         "planned": false,
         "time": "18:30",
-        "done": false
+        "done": true
       },
       {
         "planned": false,
